@@ -1,0 +1,33 @@
+{
+  "name": "wdio-slack-reporter",
+  "version": "1.0.0",
+  "description": "This reporter provides slack notifications of WebdriverIO test results.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "moroo Lee",
+    "email": "moroo.lee@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "webdriver",
+    "wdio",
+    "wdio-reporter",
+    "slack",
+    "slack-reporter",
+    "wdio-slack-reporter"
+  ],
+  "dependencies": {
+    "@slack/webhook": "^5.0.3",
+    "@wdio/logger": "^6.0.16",
+    "@wdio/reporter": "^6.1.23"
+  },
+  "peerDependencies": {
+    "@wdio/cli": "^6.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
