@@ -10,15 +10,23 @@
     "name": "moroo Lee",
     "email": "moroo.lee@gmail.com"
   },
+  "homepage": "https://github.com/morooLee/wdio-slack-reporter",
   "license": "MIT",
   "keywords": [
-    "webdriver",
+    "webdriverio",
     "wdio",
     "wdio-reporter",
     "slack",
     "slack-reporter",
     "wdio-slack-reporter"
   ],
+  "bugs": {
+    "url": "https://github.com/morooLee/wdio-slack-reporter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morooLee/wdio-slack-reporter.git"
+  },
   "dependencies": {
     "@slack/webhook": "^5.0.3",
     "@wdio/logger": "^6.0.16",
