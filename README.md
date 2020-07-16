@@ -1,7 +1,7 @@
 @moroo/wdio-slack-reporter
 ========================
 A reporter for [WebdriverIO](https://webdriver.io/) which send result to [Slack](https://slack.com/).   
-This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.\
+This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.
 
 ## Slack notification screenshot
 > *Case #1*: All Passed\
@@ -26,11 +26,11 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 You can simple do it by:   
 * NPM
 ```bash
-npm install wdio-slack-service --save-dev
+npm install @moroo/wdio-slack-reporter --save-dev
 ```
 * Yarn
 ```bash
-yarn add @rpii/wdio-html-reporter --dev
+yarn add @moroo/wdio-slack-reporter --dev
 ```
 
 Instructions on how to install `WebdriverIO` can be found [here](https://webdriver.io/docs/gettingstarted.html).
@@ -40,10 +40,10 @@ At the top of the wdio.conf.js-file, add:
  
 ```js
 // wdio.conf.js
-const slack = require('@moroo/wdio-slack-service');
+const slack = require('@moroo/wdio-slack-reporter');
 ```
 
-In order to use the service you need to add slack to your services array in wdio.conf.js
+In order to use the reporter you need to add slack to your reporters array in wdio.conf.js
 
 ```js
 // wdio.conf.js
