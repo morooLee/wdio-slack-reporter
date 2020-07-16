@@ -183,4 +183,4 @@ class SlackReporter extends WDIOReporter {
 	}
 }
 
-module.exports = SlackReporter;
+exports.default = SlackReporter;
