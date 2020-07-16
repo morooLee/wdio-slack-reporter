@@ -1,5 +1,5 @@
 const WDIOReporter = require('@wdio/reporter')
-const Logger = require('@wdio/logger')
+const Logger = require('@wdio/logger').default
 const { IncomingWebhook } = require('@slack/webhook')
 
 const log = Logger('wdio-slack-reporter');
