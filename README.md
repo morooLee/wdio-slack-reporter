@@ -7,7 +7,7 @@ This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.\
 > *Case #1*: All Passed\
 > *Case #2*: MultiRemote & Have Failure
 
-<img src="./docs/notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
+<img src="https://github.com/morooLee/wdio-slack-reporter/blob/master/docs/Notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
 
 ## WebdriverIO 4.x or lower Compatibility
 > If you are using 4.x or lower, use to [wdio-slack-reporter](https://github.com/kmnaid/wdio-slack-reporter).   
@@ -61,7 +61,7 @@ The following configuration options are supported and are all optional. By defau
 For notifications to be sent `webhook` option should atleast be set.
 
 | Option  | Description |
-|---------|----------|-------------|
+|---------|-------------|
 |webhook|String - [Incoming webhook](https://api.slack.com/incoming-webhooks) of the slack channel to which notifications should be sent. If the URL is not configured, notifications will not be sent.|
 |slackName|String - (Default: 'WebdriverIO Reporter')<br>The value of username will appear in the slack notification as the user who sent it.|
 |slackIconUrl|String - (Default: 'https://webdriver.io/img/webdriverio.png')<br>The url of the Icon to be displayed in the slack|
