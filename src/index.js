@@ -1,9 +1,8 @@
-// @ts-nocheck
 import WDIOReporter from '@wdio/reporter';
 import Logger from '@wdio/logger';
 import { IncomingWebhook } from '@slack/webhook';
 
-const log = Logger('@wdio/slack-reporter');
+const log = Logger('wdio-slack-reporter');
 const SUCCESS_COLOR = '#36a64f';
 const FAILED_COLOR = '#E51670';
 const SLACK_NAME = 'WebdriverIO Reporter';
@@ -185,4 +184,4 @@ class SlackReporter extends WDIOReporter {
 	}
 }
 
-export default SlackReporter
+export default SlackReporter;
