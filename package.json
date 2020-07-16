@@ -1,6 +1,6 @@
 {
   "name": "@moroo/wdio-slack-reporter",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "A WebdriverIO v6 reporter that notifications test results to Slack",
   "main": "src/index.js",
   "types": "wdio-slack-reporter.d.ts",
@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@slack/webhook": "^5.0.3",
-    "@wdio/logger": "^6.0.16",
     "@wdio/reporter": "^6.1.23"
   },
   "peerDependencies": {

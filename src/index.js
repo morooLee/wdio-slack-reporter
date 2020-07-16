@@ -1,23 +1,17 @@
-const WDIOReporter = require('@wdio/reporter')
-const Logger = require('@wdio/logger').default
+const WDIOReporter = require('@wdio/reporter').default
 const { IncomingWebhook } = require('@slack/webhook')
 
-const log = Logger('wdio-slack-reporter');
 const SUCCESS_COLOR = '#36a64f';
 const FAILED_COLOR = '#E51670';
 const SLACK_NAME = 'WebdriverIO Reporter';
 const SLACK_ICON_URL = 'https://webdriver.io/img/webdriverio.png';
-const NO_WEBHOOK_ERROR_LOG = 'Slack Webhook URL is not configured, notifications will not be sent to slack.';
-const RUNNER_START_INFO_LOG = 'Send a message to the slack indicating the test start.';
-const RUNNER_END_INFO_LOG = 'Send a message to the slack indicating the test result.';
-const ERROR_STACK_REPLACE_VALUE = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 
 class SlackReporter extends WDIOReporter {
     constructor (options) {
         if (!options.webhook) {
-            console.error(`[@wdio/slack-reporter] ${NO_WEBHOOK_ERROR_LOG}`);
-            log.error(NO_WEBHOOK_ERROR_LOG);
-			throw new Error(NO_WEBHOOK_ERROR_LOG);
+            const errorMessage = 'Slack Webhook URL is not configured, notifications will not be sent to slack.';
+            console.error(`[wdio-slack-reporter] ${errorMessage}`);
+			throw new Error(errorMessage);
         };
 
         options = Object.assign({ stdout: true }, options);
@@ -26,9 +20,11 @@ class SlackReporter extends WDIOReporter {
 		this.slackName = options.slackName || SLACK_NAME,
 		this.slackIconUrl = options.slackIconUrl || SLACK_ICON_URL,
 		this.webhook = new IncomingWebhook(options.webhook, { username: this.slackName, icon_url: this.slackIconUrl });
-		this.attachFailureCase = options.notifyFailureCase || true;
+        // this.useFirstSuiteTitleAsSubject = options.useFirstSuiteTitleAsSubject || true;
+        this.attachFailureCase = options.notifyFailureCase || true;
         this.notifyTestStartMessage = options.notifyTestStartMessage || true;
         this.resultsUrl = options.resultsUrl ||'';
+        this.failureAttachments = [];
         this.unsynced = [];
         this.stateCounts = {
             passed : 0,
@@ -42,7 +38,6 @@ class SlackReporter extends WDIOReporter {
     }
 
     onRunnerStart(runner) {
-        log.info(RUNNER_START_INFO_LOG);
         if (this.notifyTestStartMessage) {
             const payload = {
                 blocks: [
@@ -53,14 +48,14 @@ class SlackReporter extends WDIOReporter {
 							text: `:rocket: *Starting Test*`,
 						},
 					},
-					{
-						type: 'section',
-						text: {
-							type: 'mrkdwn',
-							text: this.setEnvironment(runner),
-						},
+                ],
+                attachments: [
+                    {
+                        color: '#D3D3D3',
+                        text: this.setEnvironment(runner),
+                        ts: Date.now()
 					},
-				],
+                ]
             };
             this.sendMessage(payload);
         }
@@ -94,19 +89,14 @@ class SlackReporter extends WDIOReporter {
     onTestEnd() {}
     onSuiteEnd() {}
     onRunnerEnd(runner) {
-        log.info(RUNNER_END_INFO_LOG);
-        const payload = createPayloadResult(runner);
+        const payload = this.createPayloadResult(runner);
         this.sendMessage(payload);
     }
 
     sendMessage(payload) {
         this.unsynced.push(payload);
-        log.info(`DATA ${JSON.stringify(payload)}`);
         this.webhook.send(payload)
-        .then((result) => {
-            log.info(`RESULT ${JSON.stringify(result)}`);
-        }).catch((error) => {
-            log.error(error);
+        .catch((error) => {
             throw error;
         }).finally(() => {
             this.unsynced.splice(0, 1);
@@ -116,10 +106,20 @@ class SlackReporter extends WDIOReporter {
     createPayloadResult(runner) {
         const result = `*Passed: ${this.stateCounts.passed} | Failed: ${this.stateCounts.failed} | Skipped: ${this.stateCounts.skipped}*`;
 		const payload = {
+            blocks: [
+                {
+                    type: 'section',
+                    text: {
+                        type: 'mrkdwn',
+                        text: `:checkered_flag: *Test Completed* - :stopwatch:${runner.duration / 1000}s`
+                    }
+                }
+            ],
 			attachments: [
 				{
                     color: `${this.stateCounts.failed ? FAILED_COLOR : SUCCESS_COLOR}`,
-					text: `:checkered_flag: *Test Completed* (:stopwatch:*${runner.duration / 1000}s)\n${result}${this.resultsUrl ? ('\n*Results:* ' + this.resultsUrl) : ''}`
+                    text: `${result}${this.resultsUrl ? ('\n*Results:* ' + this.resultsUrl) : ''}`,
+                    ts: Date.now()
 				}
 			]
 		}
@@ -135,12 +135,12 @@ class SlackReporter extends WDIOReporter {
     }
 
     createPayloadAttachFailureCase(failureCase) {
-		const errorMessage = failureCase.error.stack.replace(ERROR_STACK_REPLACE_VALUE, "");
+		const errorMessage = failureCase.error.stack.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
         const title = failureCase.parent ? `${failureCase.parent} > ${failureCase.title}` : (failureCase.title || failureCase.fullTitle);
         const attach = {
 			color: FAILED_COLOR,
-			title,
-			text: `\`\`\`${errorMessage}\`\`\``,
+            title,
+            text: `\`\`\`${errorMessage}\`\`\``
 		};
 
 		this.failureAttachments.push(attach);
@@ -161,7 +161,7 @@ class SlackReporter extends WDIOReporter {
 			capabilities.push(runner.capabilities);
 		}
 		else {
-			env += '> *MultiRemote*\n';
+			env += '*MultiRemote*\n';
 
 			Object.keys(runner.capabilities).forEach((key) => {
 				driverName.push(key)
@@ -176,11 +176,11 @@ class SlackReporter extends WDIOReporter {
 			platformVersion = capability.platformVersion || '';
 			deviceName = capability.deviceName || '';
 
-			env += '> ' + (runner.isMultiremote ? `*${driverName[index]}:* ` : '') + program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` + (deviceName ? `${deviceName} ` : '') + `${platform}` + (platformVersion ? ` (v${platformVersion})` : '') + (index === 0 ? '\n' : '')
+			env += (runner.isMultiremote ? `*${driverName[index]}:* ` : '') + program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` + (deviceName ? `${deviceName} ` : '') + `${platform}` + (platformVersion ? ` (v${platformVersion})` : '') + (index === 0 ? '\n' : '')
 		})
-
+        
 		return env;
 	}
 }
 
-exports.default = SlackReporter;
+module.exports = SlackReporter;

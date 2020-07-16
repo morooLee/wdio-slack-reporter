@@ -4,10 +4,10 @@ import { IncomingWebhookSendArguments } from '@slack/webhook'
 export interface SlackReporterOptions extends WDIOReporter.Options {
   slackName?: string;
   slackIconUrl?: string;
-  webhook: string;
+  webhook?: string;
   attachFailureCase?: boolean;
   notifyTestStartMessage?: boolean;
-  resultsUr?: string;
+  resultsUrl?: string;
 }
 
 export declare class SlackReporter extends WDIOReporter {
