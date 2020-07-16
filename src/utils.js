@@ -1,4 +1,4 @@
-import { IncomingWebhook } from '@slack/webhook';
+const { IncomingWebhook } = require('@slack/webhook')
 
 /**
  * transform cucumber table to format suitable for `easy-table`

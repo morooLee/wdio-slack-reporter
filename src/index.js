@@ -1,6 +1,6 @@
-import WDIOReporter from '@wdio/reporter';
-import Logger from '@wdio/logger';
-import { IncomingWebhook } from '@slack/webhook';
+const WDIOReporter = require('@wdio/reporter')
+const Logger = require('@wdio/logger')
+const { IncomingWebhook } = require('@slack/webhook')
 
 const log = Logger('wdio-slack-reporter');
 const SUCCESS_COLOR = '#36a64f';
@@ -183,4 +183,4 @@ class SlackReporter extends WDIOReporter {
 	}
 }
 
-export default SlackReporter;
+module.exports = SlackReporter;
