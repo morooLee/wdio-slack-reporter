@@ -13,7 +13,6 @@ const RUNNER_END_INFO_LOG = 'Send a message to the slack indicating the test res
 const ERROR_STACK_REPLACE_VALUE = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 
 class SlackReporter extends WDIOReporter {
-
     constructor (options) {
         if (!options.webhook) {
             console.error(`[@wdio/slack-reporter] ${NO_WEBHOOK_ERROR_LOG}`);
@@ -135,9 +134,9 @@ class SlackReporter extends WDIOReporter {
 		return payload;
     }
 
-    createPayloadAttachFailureCase(target) {
-		const errorMessage = target.error.stack.replace(ERROR_STACK_REPLACE_VALUE, "");
-        const title = target.parent ? `${target.parent} > ${target.title}` : (target.title || target.fullTitle);
+    createPayloadAttachFailureCase(failureCase) {
+		const errorMessage = failureCase.error.stack.replace(ERROR_STACK_REPLACE_VALUE, "");
+        const title = failureCase.parent ? `${failureCase.parent} > ${failureCase.title}` : (failureCase.title || failureCase.fullTitle);
         const attach = {
 			color: FAILED_COLOR,
 			title,

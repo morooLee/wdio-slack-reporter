@@ -1,8 +1,9 @@
 {
   "name": "@moroo/wdio-slack-reporter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "This reporter provides slack notifications of WebdriverIO test results.",
   "main": "src/index.js",
+  "types": "wdio-slack-reporter.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -37,5 +38,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "devDependencies": {}
 }
