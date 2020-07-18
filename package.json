@@ -2,10 +2,11 @@
   "name": "@moroo/wdio-slack-reporter",
   "version": "0.1.2",
   "description": "A WebdriverIO v6 reporter that notifications test results to Slack",
-  "main": "src/index.js",
-  "types": "wdio-slack-reporter.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "test": "jest"
   },
   "author": {
     "name": "moroo Lee",
@@ -38,5 +39,11 @@
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@slack/types": "^1.7.0",
+    "@types/jest": "^26.0.4",
+    "jest": "^26.1.0",
+    "ts-jest": "^26.1.3",
+    "typescript": "^3.9.7"
+  }
 }

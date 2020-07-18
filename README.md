@@ -7,7 +7,7 @@ This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.
 > *Case #1*: All Passed\
 > *Case #2*: MultiRemote & Have Failure
 
-<img src="https://github.com/morooLee/wdio-slack-reporter/blob/master/docs/Notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
+<img src="https://raw.githubusercontent.com/morooLee/wdio-slack-reporter/master/docs/Notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
 
 ## WebdriverIO 4.x or lower Compatibility
 > If you are using 4.x or lower, use to [wdio-slack-reporter](https://github.com/kmnaid/wdio-slack-reporter).   

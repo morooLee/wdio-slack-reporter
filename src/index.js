@@ -3,6 +3,7 @@ const { IncomingWebhook } = require('@slack/webhook')
 
 const SUCCESS_COLOR = '#36a64f';
 const FAILED_COLOR = '#E51670';
+const DEFAULT_COLOR = '#D3D3D3'
 const SLACK_NAME = 'WebdriverIO Reporter';
 const SLACK_ICON_URL = 'https://webdriver.io/img/webdriverio.png';
 
@@ -12,7 +13,7 @@ class SlackReporter extends WDIOReporter {
             const errorMessage = 'Slack Webhook URL is not configured, notifications will not be sent to slack.';
             console.error(`[wdio-slack-reporter] ${errorMessage}`);
 			throw new Error(errorMessage);
-        };
+        }
 
         options = Object.assign({ stdout: true }, options);
         super(options);
@@ -51,7 +52,7 @@ class SlackReporter extends WDIOReporter {
                 ],
                 attachments: [
                     {
-                        color: '#D3D3D3',
+                        color: DEFAULT_COLOR,
                         text: this.setEnvironment(runner),
                         ts: Date.now()
 					},
@@ -140,7 +141,7 @@ class SlackReporter extends WDIOReporter {
         const attach = {
 			color: FAILED_COLOR,
             title,
-            text: `\`\`\`${errorMessage}\`\`\``
+            text: errorMessage
 		};
 
 		this.failureAttachments.push(attach);
