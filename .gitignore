@@ -1,3 +1,5 @@
 node_modules/
 /lib/utils.ts
+/dist/utils.js
+/dist/utils.d.ts
 **/.DS_Store
