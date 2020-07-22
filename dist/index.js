@@ -1,7 +1,6 @@
 "use strict";
 const reporter_1 = require("@wdio/reporter");
 const webhook_1 = require("@slack/webhook");
-
 const SUCCESS_COLOR = '#36a64f';
 const FAILED_COLOR = '#E51670';
 const DEFAULT_COLOR = '#D3D3D3';
@@ -35,7 +34,6 @@ class SlackReporter extends reporter_1.default {
         return this.unsynced.length === 0;
     }
     onRunnerStart(runner) {
-        this.isMultiremote = runner.isMultiremote;
         if (this.notifyTestStartMessage) {
             const payload = {
                 blocks: [
@@ -76,58 +74,20 @@ class SlackReporter extends reporter_1.default {
     onTestPass() {
         this.stateCounts.passed++;
     }
-    async onTestFail(test) {
-        // console.log(test)
-        // test.output.forEach((el) => {
-        //     // if (el.method === 'POST' && el.type === 'result') {
-        //     //     console.log('result: ', el.result)
-        //     // }
-        //     console.log('body: ', el.body)
-        // })
+    onTestFail(test) {
         this.stateCounts.failed++;
         if (this.attachFailureCase) {
             const title = test.title || test.fullTitle;
             const errors = test.errors || [test.error];
             this.addFailureAttachments(title, errors);
         }
-        // const timestamp = moment().format('YYYYMMDD-HHmmss.SSS');
-        // const filepath = path.join('e2e/reports/screenshots/', timestamp + '.png');
-        // try {
-        //     const base64 = await driver.takeScreenshot()
-        //     // const base64 = await driver.takeScreenshot();
-        //     const buffer = Buffer.from(base64.toString(), 'base64')
-        //     console.log('buffer: ', buffer)
-        //     // console.log('base64', base64.length)
-            
-        // }
-        // catch (e) {
-        //     console.log(e)
-        //     throw e;
-        // }
-        
     }
     onTestSkip() {
         this.stateCounts.skipped++;
     }
-    async onTestEnd(test) {
-        if (test.state === 'failed') {
-            try {
-                const base64 = await driver.chrome.takeScreenshot()
-                // const base64 = await driver.takeScreenshot();
-                const buffer = Buffer.from(base64.toString(), 'base64')
-                console.log('buffer: ', buffer)
-                // console.log('base64', base64.length)
-                
-            }
-            catch (e) {
-                console.log(e)
-                throw e;
-            }
-        }
-    }
+    onTestEnd() { }
     onSuiteEnd() { }
     onRunnerEnd(runner) {
-        // console.log('capabilities', runner.capabilities)
         const payload = this.createPayloadResult(runner);
         this.sendMessage(payload);
     }
@@ -172,7 +132,7 @@ class SlackReporter extends reporter_1.default {
     }
     addFailureAttachments(title, errors) {
         const errorMessage = errors.reduce((acc, cur) => {
-            return acc + '```' + cur + '```';
+            return acc + '```' + this.convertErrorStack(cur.stack) + '```';
         }, '');
         const attach = {
             color: FAILED_COLOR,
