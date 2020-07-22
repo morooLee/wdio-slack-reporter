@@ -174,7 +174,7 @@ class SlackReporter extends WDIOReporter {
 
   addFailureAttachments(title: string, errors: WDIOReporter.Error[]): void {
     const errorMessage = errors.reduce((acc, cur) => {
-      return acc + '```' + cur + '```'
+      return acc + '```' + this.convertErrorStack(cur.stack)+ '```'
     }, '')
     const attach = {
       color: FAILED_COLOR,
