@@ -1,7 +1,7 @@
 {
   "name": "@moroo/wdio-slack-reporter",
-  "version": "0.1.4",
-  "description": "A WebdriverIO v6 reporter that notifications test results to Slack",
+  "version": "1.0.0",
+  "description": "Reporter from WebdriverIO using Incoming webhook and Web API to send results to Slack.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
