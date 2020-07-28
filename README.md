@@ -1,6 +1,6 @@
 @moroo/wdio-slack-reporter
 ========================
-A reporter for [WebdriverIO](https://webdriver.io/) which send result to [Slack](https://slack.com/).   
+Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).<br>
 This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.
 
 ## Slack notification screenshot
@@ -19,7 +19,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "0.1.4"
+    "@moroo/wdio-slack-reporter": "1.0.0"
   }
 }
 ```
@@ -40,7 +40,7 @@ At the top of the wdio.conf.js-file, add:
  
 ```js
 // wdio.conf.js
-const slack = require('@moroo/wdio-slack-reporter');
+const slack = require("@moroo/wdio-slack-reporter");
 ```
 
 In order to use the reporter you need to add slack to your reporters array in wdio.conf.js
@@ -57,27 +57,92 @@ export.config = {
 ```
 ## Configuration Options
 
-The following configuration options are supported and are all optional. By default none of the config options are set.
-For notifications to be sent `webhook` option should atleast be set.
+The following configuration options are supported.<br>
+For notifications to be sent, You must set `webhook` or `web-api`.<br>
+If both `web-api` and `webhook` are set, `web-api` is used.
 
-| Option  | Description |
-|---------|-------------|
-|webhook|String - [Incoming webhook](https://api.slack.com/incoming-webhooks) of the slack channel to which notifications should be sent. If the URL is not configured, notifications will not be sent.|
-|slackName|String - (Default: 'WebdriverIO Reporter')<br>The value of username will appear in the slack notification as the user who sent it.|
-|slackIconUrl|String - (Default: 'https://webdriver.io/img/webdriverio.png')<br>The url of the Icon to be displayed in the slack|
-|notifyTestStartMessage|Boolean - (Default: true)<br>Set this option to true to send notifications test start and driver capabilities.|
-|attachFailureCase|Boolean - (Default: true)<br>Set this option to true to attach failure cases in the test results reported to Slack.|
-|resultsUrl|URL - Provide a link to the test results. It is a clickable link in the notification.
+| Group | Option | Required | Description |
+|-------|--------|----------|-------------|
+|**webhook**|webhook|`required`|**type**: `string`<br>**scope**: `webhook`<br>[**Incoming webhook**](https://api.slack.com/incoming-webhooks) of the slack channel to which notifications should be sent. If the URL is not configured, notifications will not be sent.|
+||slackName||**type**: `string`<br>**scope**: `webhook`<br>**default**: `"WebdriverIO Reporter"`<br>The value of username will appear in the slack notification as the user who sent it.|
+||slackIconUrl||**type**: `string`<br>**scope**: `webhook`<br>**default**: `"https://webdriver.io/img/webdriverio.png"`<br>The url of the Icon to be displayed in the slack|
+|**web-api**|slackBotToken|`required`|**type**: `string`<br>**scope**: `web-api`<br>[**Web API**](https://api.slack.com/web) of the slack channel to which notifications should be sent. [A bot user token](https://api.slack.com/legacy/oauth#bots) is required. Bot access tokens always begin with `xoxb`.|
+||channel|`required`|**type**: `string`<br>**scope**: `web-api`<br>Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name. [See below](https://api.slack.com/methods/chat.postMessage#text_usage) for more details.<br>_[`"How to find channel ID" - stackoverflow -`](https://stackoverflow.com/questions/57139545/how-can-i-see-slack-bot-info-like-user-id-and-bot-id-without-making-api-call)_|
+||uploadScreenshotOfFailedCase||**type**: `boolean`<br>**scope**: `web-api`<br>**default**: `false`<br>Set this option to true to attach a screenshot to the failed case.|
+|**common**|notifyTestStartMessage||**type**: `boolean`<br>**scope**: `webhook`, `web-api`<br>**default**: `true`<br>Set this option to true to send notifications test start.|
+||attachFailedCase||**type**: `boolean`<br>**scope**: `webhook`, `web-api`<br>**default**: `true`<br>Set this option to true to attach failed cases in the test results reported to Slack.|
+||resultsUrl||**type**: `string`<br>**scope**: `webhook`, `web-api`<br>Provide a link to the test results. It is a clickable link in the notification.
+
+## Use the Incoming Webhook
+If you are using webhook, these options are not available.
+> **slackBotToken**: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx..."<br>
+> **channel**: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx"<br>
+> **uploadScreenshotOfFailedCase**: true<br>
 ```js
 // wdio.conf.js
 export.config = {
   reporters: [
     [slack, {
-      webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",  
-      slackName: 'WebdriverIO Reporter',
-      slackIconUrl: 'https://webdriver.io/img/webdriverio.png',
-      attachFailureCase: true,
+      /**
+       * [Incoming Webhook]
+       * If you are using webhook, these options are not available.
+       * @memberof slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",
+       * @memberof channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
+       * @memberof uploadScreenshotOfFailedCase: true,
+       */
+      webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
+      slackName: "WebdriverIO Reporter",
+      slackIconUrl: "https://webdriver.io/img/webdriverio.png",
+      attachFailedCase: true,
       notifyTestStartMessage: true,
+      resultsUrl: process.env.JENKINS_URL,
+    }],
+  ],
+};
+```
+## Use the Web API
+If you are using web-api, these options are not available.
+> **webhook**: process.env.SLACK_WEBHOOK_URL || "https&#8203;://hooks.slack.com/........"<br>
+> **slackName**: "WebdriverIO Reporter"<br>
+> **slackIconUrl**: "https&#8203;://webdriver.io/img/webdriverio.png"<br>
+```js
+//wdio.conf.js
+export.config = {
+  reporters: [
+    [slack, {
+      /**
+       * [Web API]
+       * If you are using web-api, these options are not available.
+       * @memberof webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
+       * @memberof slackName: "WebdriverIO Reporter",
+       * @memberof slackIconUrl: "https://webdriver.io/img/webdriverio.png",
+       */
+      slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",
+      channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
+      attachFailedCase: true,
+      notifyTestStartMessage: true,
+      uploadScreenshotOfFailedCase: true,
+      resultsUrl: process.env.JENKINS_URL,
+    }],
+  ],
+};
+```
+## Set all options
+If you set both `webhook` and `web-api`, `web-api` is used.
+```js
+//wdio.conf.js
+export.config = {
+  reporters: [
+    [slack, {
+      // If you set both webhook and web-api, web-api is used.
+      webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
+      slackName: "WebdriverIO Reporter",
+      slackIconUrl: "https://webdriver.io/img/webdriverio.png",
+      slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",
+      channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
+      attachFailedCase: true,
+      notifyTestStartMessage: true,
+      uploadScreenshotOfFailedCase: true,
       resultsUrl: process.env.JENKINS_URL,
     }],
   ],

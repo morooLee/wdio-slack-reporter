@@ -1,12 +1,28 @@
 import WDIOReporter from '@wdio/reporter'
-import { IncomingWebhook, IncomingWebhookSendArguments } from '@slack/webhook'
-import { MessageAttachment } from '@slack/types'
+import { 
+  SlackAPI,
+  SlackWebhook,
+  ChatPostMessageArguments,
+  IncomingWebhookSendArguments,
+  WebAPICallResult,
+  IncomingWebhookResult } from './utils';
 
-interface SlackReporterOptions extends WDIOReporter.Options {
+declare namespace WebdriverIO {
+	interface BrowserObject {
+    takeScreenshot(): string | string[]
+  }
+}
+
+declare var driver: WebdriverIO.BrowserObject;
+
+export interface SlackReporterOptions extends WDIOReporter.Options {
   slackName?: string;
   slackIconUrl?: string;
+  channel?: string;
+  slackBotToken?: string;
   webhook?: string;
-  attachFailureCase?: boolean;
+  attachFailedCase?: boolean;
+  uploadScreenshotOfFailedCase?: boolean;
   notifyTestStartMessage?: boolean;
   resultsUrl?: string;
 }
@@ -17,10 +33,21 @@ interface StateCounts {
   skipped: number;
 }
 
-declare interface Hook extends WDIOReporter.Hook {
+interface Hook extends WDIOReporter.Hook {
   error?: WDIOReporter.Error;
+  errors?: WDIOReporter.Error[];
 }
 
+interface Test extends WDIOReporter.Test {
+  uid?: string;
+}
+
+interface FailedMetaData {
+  uid: string,
+  title: string,
+  errors: WDIOReporter.Error[],
+  screenshot?: string[]
+}
 
 const SUCCESS_COLOR = '#36a64f';
 const FAILED_COLOR = '#E51670';
@@ -28,45 +55,67 @@ const DEFAULT_COLOR = '#D3D3D3';
 const SLACK_NAME = 'WebdriverIO Reporter';
 const SLACK_ICON_URL = 'https://webdriver.io/img/webdriverio.png';
 
-class SlackReporter extends WDIOReporter {
+export class SlackReporter extends WDIOReporter {
   private slackName: string;
   private slackIconUrl: string;
-  private webhook: IncomingWebhook;
+  private channel?: string;
+  private api?: SlackAPI;
+  private webhook?: SlackWebhook;
+  private isWebhook: boolean;
   private attachFailureCase: boolean;
+  private uploadScreenshotOfFailedCase: boolean;
   private notifyTestStartMessage: boolean;
   private resultsUrl: string;
-  private failureAttachments: MessageAttachment[];
-  private unsynced: IncomingWebhookSendArguments[];
+  private isCompletedReport: boolean
   private stateCounts: StateCounts;
+  private failedMetaData: FailedMetaData[];
 
   constructor (options: SlackReporterOptions) {
-    if (!options.webhook) {
-      const errorMessage = 'Slack Webhook URL is not configured, notifications will not be sent to slack.';
+    if (!options.webhook && !options.slackBotToken) {
+      const errorMessage = 'Slack Webhook URL or Slack Bot Token is not configured, notifications will not be sent to slack.';
       console.error(`[wdio-slack-reporter] ${errorMessage}`);
       
       throw new Error(errorMessage);
-    };
-    options = Object.assign( { stdout: true }, options);
+    }
+    else if (options.slackBotToken && !options.channel) {
+      const errorMessage = 'Channel is not configured, Configure the channel to use the Slack API.';
+      console.error(`[wdio-slack-reporter] ${errorMessage}`);
+
+      throw new Error(errorMessage);
+    }
+    else if (options.uploadScreenshotOfFailedCase && options.webhook && !options.slackBotToken) {
+      const errorMessage = 'The uploadScreenshotOfFailedCase option is only available if web-api is set.';
+      console.warn(`[wdio-slack-reporter] ${errorMessage}`);
+    }
+    options = Object.assign( { stdout: false }, options);
     super(options);
 
     this.slackName = options.slackName || SLACK_NAME;
     this.slackIconUrl = options.slackIconUrl || SLACK_ICON_URL;
-    this.webhook = new IncomingWebhook(options.webhook!, { username: this.slackName, icon_url: this.slackIconUrl });
-    // this.useFirstSuiteTitleAsSubject = options.useFirstSuiteTitleAsSubject || true;
-    this.attachFailureCase = options.attachFailureCase || true;
-    this.notifyTestStartMessage = options.notifyTestStartMessage || true;
-    this.resultsUrl = options.resultsUrl ||'';
-    this.failureAttachments = [];
-    this.unsynced = [];
+    this.isWebhook = true;
+    if (options.slackBotToken && options.channel) {
+      this.api = new SlackAPI(options.slackBotToken);
+      this.channel = options.channel;
+      this.isWebhook = false;
+    }
+    else if (options.webhook) {
+      this.webhook = new SlackWebhook(options.webhook, { username: this.slackName, icon_url: this.slackIconUrl })
+    }
+    this.attachFailureCase = options.attachFailedCase === undefined ? true : options.attachFailedCase;
+    this.uploadScreenshotOfFailedCase = options.uploadScreenshotOfFailedCase === undefined ? false : options.uploadScreenshotOfFailedCase;
+    this.notifyTestStartMessage = options.notifyTestStartMessage === undefined ? true : options.notifyTestStartMessage;
+    this.resultsUrl = options.resultsUrl || '';
     this.stateCounts = {
       passed : 0,
       failed : 0,
       skipped : 0
     };
+    this.failedMetaData = [];
+    this.isCompletedReport = false;
   }
 
   get isSynchronised(): boolean {
-    return this.unsynced.length === 0;
+    return this.isCompletedReport;
   }
 
   onRunnerStart(runner: any): void {
@@ -77,7 +126,7 @@ class SlackReporter extends WDIOReporter {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `:rocket: *Starting Test*`,
+              text: `:rocket: *Starting WebdriverIO*`,
             },
           },
         ],
@@ -92,54 +141,101 @@ class SlackReporter extends WDIOReporter {
       this.sendMessage(payload);
     }
   }
-  onBeforeCommand() {}
-  onAfterCommand() {}
-  onScreenshot() {}
-  onSuiteStart() {}
-  onHookStart() {}
-  onHookEnd(hook: Hook) {
+  // onBeforeCommand() {}
+  // onAfterCommand() {}
+  // onScreenshot() {}
+  // onSuiteStart() {}
+  // onHookStart() {}
+  onHookEnd(hook: Hook): void {
     if (hook.error) {
       this.stateCounts.failed++;
       if (this.attachFailureCase) {
         const title = `${hook.parent} > ${hook.title}`;
-        this.addFailureAttachments(title, [hook.error]);
+        const errors = hook.errors || [hook.error]
+
+        const metaData: FailedMetaData = {
+          uid: hook.uid,
+          title,
+          errors,
+        }
+        
+        this.failedMetaData.push(metaData)
       }
     }
   }
-  onTestStart() {}
-  onTestPass() {
+  // onTestStart() {}
+  onTestPass(): void {
     this.stateCounts.passed++;
   }
-  onTestFail(test: WDIOReporter.Test) {
+  async onTestFail(test: Test): Promise<void> {
     this.stateCounts.failed++;
+
     if (this.attachFailureCase) {
       const title = test.title || test.fullTitle;
       const errors = test.errors || [test.error!];
-
-      this.addFailureAttachments(title, errors);
+      const metaData: FailedMetaData = {
+        uid: test.uid!,
+        title,
+        errors,
+      }
+      if (!this.isWebhook && this.uploadScreenshotOfFailedCase) {
+        try {
+          const results = await driver.takeScreenshot();
+          metaData.screenshot = [];
+          if (Array.isArray(results)) {
+            for (const result of results) {
+              metaData.screenshot.push(result)
+            }
+          }
+          else {
+            metaData.screenshot.push(results)
+          }
+        }
+        catch (error) {
+          throw error;
+        }
+      }
+      this.failedMetaData.push(metaData)
     }
   }
-  onTestSkip() {
+  onTestSkip(): void {
     this.stateCounts.skipped++;
   }
-  onTestEnd() {}
-  onSuiteEnd() {}
-  onRunnerEnd(runner: any) {
-    const payload: IncomingWebhookSendArguments = this.createPayloadResult(runner);
-    this.sendMessage(payload);
+  // onTestEnd() {}
+  // onSuiteEnd() {}
+  async onRunnerEnd(runner: any): Promise<void> {
+    try {
+      await this.sendResultMessage(runner);
+      await this.sendFailedTestMessage();
+    }
+    catch (error) {
+      throw error;
+    }
+    finally {
+      this.isCompletedReport = true;
+    }
   }
 
-  sendMessage(payload: IncomingWebhookSendArguments): void {
-    this.unsynced.push(payload);
-    this.webhook.send(payload)
-    .catch((error) => {
+  async sendMessage(payload: IncomingWebhookSendArguments): Promise<IncomingWebhookResult | WebAPICallResult> {
+    try {
+      if (this.isWebhook) {
+        return await this.webhook!.send(payload);
+      }
+      else {
+        const options: ChatPostMessageArguments = {
+          channel: this.channel!,
+          text: '',
+          ...payload
+        }
+        return await this.api!.sendMessage(options);
+      }
+    }
+    catch (error) {
       throw error;
-    }).finally(() => {
-      this.unsynced.splice(0, 1);
-    });
+    }
   }
   
-  createPayloadResult(runner: any): IncomingWebhookSendArguments {
+  async sendResultMessage(runner: any): Promise<void> {
     const result = `*Passed: ${this.stateCounts.passed} | Failed: ${this.stateCounts.failed} | Skipped: ${this.stateCounts.skipped}*`;
     const payload: IncomingWebhookSendArguments = {
       blocks: [
@@ -154,35 +250,47 @@ class SlackReporter extends WDIOReporter {
       attachments: [
         {
           color: `${this.stateCounts.failed ? FAILED_COLOR : SUCCESS_COLOR}`,
-          text: `${result}${this.resultsUrl ? ('\n*Results:* ' + this.resultsUrl) : ''}`,
+          text: `${!this.notifyTestStartMessage ? this.setEnvironment(runner) + '\n' : '' }${result}${this.resultsUrl ? ('\n*Results:* ' + this.resultsUrl) : ''}`,
           ts: Date.now().toString()
         }
       ]
     }
 
-    if (this.failureAttachments.length > 0) {
-      const dividerBlock: MessageAttachment = { blocks: [{ type: "divider" }] };
-      payload.attachments!.push(dividerBlock);
-      
-      this.failureAttachments.forEach((attach) => {
-        payload.attachments!.push(attach)
-      });
-    };
-
-    return payload;
+    await this.sendMessage(payload);
   }
 
-  addFailureAttachments(title: string, errors: WDIOReporter.Error[]): void {
-    const errorMessage = errors.reduce((acc, cur) => {
-      return acc + '```' + this.convertErrorStack(cur.stack)+ '```'
-    }, '')
-    const attach = {
-      color: FAILED_COLOR,
-      title,
-      text: errorMessage
-    };
-
-    this.failureAttachments.push(attach);
+  async sendFailedTestMessage(): Promise<void> {
+    if (this.failedMetaData.length > 0) {
+      try {
+        for (const data of this.failedMetaData) {
+          const errorMessage = data.errors.reduce((acc, cur) => {
+            return acc + '```' + this.convertErrorStack(cur.stack)+ '```'
+          }, '')
+      
+          const payload: IncomingWebhookSendArguments = {
+            attachments: [
+              {
+                color: FAILED_COLOR,
+                title: data.title,
+                text: errorMessage
+              }
+            ]
+          };
+  
+          const result = await this.sendMessage(payload);
+          if (!this.isWebhook && data.screenshot && data.screenshot.length > 0) {
+            for (const screenshot of data.screenshot) {
+              const buffer = Buffer.from(screenshot, 'base64');
+              await this.api?.uploadScreenshot({ file: buffer, thread_ts: (result as any).ts, channels: this.channel });
+            }
+          }
+        }
+      }
+      catch (error) {
+        throw error;
+      }
+      
+    }
   }
 
   convertErrorStack(stack: string): string {
@@ -220,11 +328,11 @@ class SlackReporter extends WDIOReporter {
       platformVersion = capability.platformVersion || '';
       deviceName = capability.deviceName || '';
 
-      env += (runner.isMultiremote ? `*${driverName[index]}:* ` : '') + program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` + (deviceName ? `${deviceName} ` : '') + `${platform}` + (platformVersion ? ` (v${platformVersion})` : '') + (index === 0 ? '\n' : '')
+      env += (runner.isMultiremote ? `- *${driverName[index]}*: ` : '*Driver*: ') + program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` + (deviceName ? `${deviceName} ` : '') + `${platform}` + (platformVersion ? ` (v${platformVersion})` : '') + (index === 0 ? '\n' : '')
     })
       
     return env;
   }
 }
 
-export = SlackReporter;
+module.exports = SlackReporter

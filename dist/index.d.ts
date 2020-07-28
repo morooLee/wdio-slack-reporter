@@ -1,46 +1,49 @@
 import WDIOReporter from '@wdio/reporter';
-import { IncomingWebhookSendArguments } from '@slack/webhook';
-interface SlackReporterOptions extends WDIOReporter.Options {
+import { IncomingWebhookSendArguments, WebAPICallResult, IncomingWebhookResult } from './utils';
+export interface SlackReporterOptions extends WDIOReporter.Options {
     slackName?: string;
     slackIconUrl?: string;
+    channel?: string;
+    slackBotToken?: string;
     webhook?: string;
-    attachFailureCase?: boolean;
+    attachFailedCase?: boolean;
+    uploadScreenshotOfFailedCase?: boolean;
     notifyTestStartMessage?: boolean;
     resultsUrl?: string;
 }
-declare interface Hook extends WDIOReporter.Hook {
+interface Hook extends WDIOReporter.Hook {
     error?: WDIOReporter.Error;
+    errors?: WDIOReporter.Error[];
 }
-declare class SlackReporter extends WDIOReporter {
+interface Test extends WDIOReporter.Test {
+    uid?: string;
+}
+export declare class SlackReporter extends WDIOReporter {
     private slackName;
     private slackIconUrl;
-    private webhook;
+    private channel?;
+    private api?;
+    private webhook?;
+    private isWebhook;
     private attachFailureCase;
+    private uploadScreenshotOfFailedCase;
     private notifyTestStartMessage;
     private resultsUrl;
-    private failureAttachments;
-    private unsynced;
+    private isCompletedReport;
     private stateCounts;
+    private failedMetaData;
     constructor(options: SlackReporterOptions);
     get isSynchronised(): boolean;
     onRunnerStart(runner: any): void;
-    onBeforeCommand(): void;
-    onAfterCommand(): void;
-    onScreenshot(): void;
-    onSuiteStart(): void;
-    onHookStart(): void;
     onHookEnd(hook: Hook): void;
-    onTestStart(): void;
     onTestPass(): void;
-    onTestFail(test: WDIOReporter.Test): void;
+    onTestFail(test: Test): Promise<void>;
     onTestSkip(): void;
-    onTestEnd(): void;
-    onSuiteEnd(): void;
-    onRunnerEnd(runner: any): void;
-    sendMessage(payload: IncomingWebhookSendArguments): void;
-    createPayloadResult(runner: any): IncomingWebhookSendArguments;
-    addFailureAttachments(title: string, errors: WDIOReporter.Error[]): void;
+    onRunnerEnd(runner: any): Promise<void>;
+    sendMessage(payload: IncomingWebhookSendArguments): Promise<IncomingWebhookResult | WebAPICallResult>;
+    sendResultMessage(runner: any): Promise<void>;
+    sendFailedTestMessage(): Promise<void>;
     convertErrorStack(stack: string): string;
     setEnvironment(runner: any): string;
 }
-export = SlackReporter;
+export {};

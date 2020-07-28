@@ -30,6 +30,7 @@
     "url": "https://github.com/morooLee/wdio-slack-reporter.git"
   },
   "dependencies": {
+    "@slack/web-api": "^5.11.0",
     "@slack/webhook": "^5.0.3",
     "@wdio/reporter": "^6.1.23"
   },
