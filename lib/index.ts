@@ -62,7 +62,7 @@ export class SlackReporter extends WDIOReporter {
   private api?: SlackAPI;
   private webhook?: SlackWebhook;
   private isWebhook: boolean;
-  private attachFailureCase: boolean;
+  private attachFailedCase: boolean;
   private uploadScreenshotOfFailedCase: boolean;
   private notifyTestStartMessage: boolean;
   private resultsUrl: string;
@@ -101,7 +101,7 @@ export class SlackReporter extends WDIOReporter {
     else if (options.webhook) {
       this.webhook = new SlackWebhook(options.webhook, { username: this.slackName, icon_url: this.slackIconUrl })
     }
-    this.attachFailureCase = options.attachFailedCase === undefined ? true : options.attachFailedCase;
+    this.attachFailedCase = options.attachFailedCase === undefined ? true : options.attachFailedCase;
     this.uploadScreenshotOfFailedCase = options.uploadScreenshotOfFailedCase === undefined ? false : options.uploadScreenshotOfFailedCase;
     this.notifyTestStartMessage = options.notifyTestStartMessage === undefined ? true : options.notifyTestStartMessage;
     this.resultsUrl = options.resultsUrl || '';
@@ -149,7 +149,7 @@ export class SlackReporter extends WDIOReporter {
   onHookEnd(hook: Hook): void {
     if (hook.error) {
       this.stateCounts.failed++;
-      if (this.attachFailureCase) {
+      if (this.attachFailedCase) {
         const title = `${hook.parent} > ${hook.title}`;
         const errors = hook.errors || [hook.error]
 
@@ -170,7 +170,7 @@ export class SlackReporter extends WDIOReporter {
   async onTestFail(test: Test): Promise<void> {
     this.stateCounts.failed++;
 
-    if (this.attachFailureCase) {
+    if (this.attachFailedCase) {
       const title = test.title || test.fullTitle;
       const errors = test.errors || [test.error!];
       const metaData: FailedMetaData = {

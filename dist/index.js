@@ -49,7 +49,7 @@ class SlackReporter extends reporter_1.default {
         else if (options.webhook) {
             this.webhook = new utils_1.SlackWebhook(options.webhook, { username: this.slackName, icon_url: this.slackIconUrl });
         }
-        this.attachFailureCase = options.attachFailedCase === undefined ? true : options.attachFailedCase;
+        this.attachFailedCase = options.attachFailedCase === undefined ? true : options.attachFailedCase;
         this.uploadScreenshotOfFailedCase = options.uploadScreenshotOfFailedCase === undefined ? false : options.uploadScreenshotOfFailedCase;
         this.notifyTestStartMessage = options.notifyTestStartMessage === undefined ? true : options.notifyTestStartMessage;
         this.resultsUrl = options.resultsUrl || '';
@@ -90,7 +90,7 @@ class SlackReporter extends reporter_1.default {
     onHookEnd(hook) {
         if (hook.error) {
             this.stateCounts.failed++;
-            if (this.attachFailureCase) {
+            if (this.attachFailedCase) {
                 const title = `${hook.parent} > ${hook.title}`;
                 const errors = hook.errors || [hook.error];
                 const metaData = {
@@ -108,7 +108,7 @@ class SlackReporter extends reporter_1.default {
     onTestFail(test) {
         return __awaiter(this, void 0, void 0, function* () {
             this.stateCounts.failed++;
-            if (this.attachFailureCase) {
+            if (this.attachFailedCase) {
                 const title = test.title || test.fullTitle;
                 const errors = test.errors || [test.error];
                 const metaData = {

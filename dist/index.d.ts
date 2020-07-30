@@ -25,7 +25,7 @@ export declare class SlackReporter extends WDIOReporter {
     private api?;
     private webhook?;
     private isWebhook;
-    private attachFailureCase;
+    private attachFailedCase;
     private uploadScreenshotOfFailedCase;
     private notifyTestStartMessage;
     private resultsUrl;
