@@ -86,9 +86,9 @@ export.config = {
       /**
        * [Incoming Webhook]
        * If you are using webhook, these options are not available.
-       * @memberof slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",
-       * @memberof channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
-       * @memberof uploadScreenshotOfFailedCase: true,
+       * @param {string} slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",
+       * @param {string} channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
+       * @param {boolean} uploadScreenshotOfFailedCase: true,
        */
       webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
       slackName: "WebdriverIO Reporter",
@@ -113,9 +113,9 @@ export.config = {
       /**
        * [Web API]
        * If you are using web-api, these options are not available.
-       * @memberof webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
-       * @memberof slackName: "WebdriverIO Reporter",
-       * @memberof slackIconUrl: "https://webdriver.io/img/webdriverio.png",
+       * @param {string} webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
+       * @param {string} slackName: "WebdriverIO Reporter",
+       * @param {string} slackIconUrl: "https://webdriver.io/img/webdriverio.png",
        */
       slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",
       channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
@@ -147,4 +147,25 @@ export.config = {
     }],
   ],
 };
+```
+## Issues
+### Unsynced
+If the following error occurs, set `reporterSyncInterval` in `wdio.conf.js`.
+> **`ERROR @wdio/runner: Error: Some reporters are still unsynced: SlackReporter`**
+```js
+//wdio.conf.js
+export.config = {
+  reporterSyncInterval: 20000,
+}
+```
+### Promise\<pending\>
+If the following error occurs, set the interval between tests using the `hook`.
+> **`$(...).click is not a function`**
+```js
+//wdio.conf.js
+export.config = {
+  beforeHook: function (test, context) {
+    driver.pause(500);
+  },
+}
 ```
