@@ -19,7 +19,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "1.0.2"
+    "@moroo/wdio-slack-reporter": "1.0.3"
   }
 }
 ```
@@ -66,8 +66,8 @@ If both `web-api` and `webhook` are set, `web-api` is used.
 |**webhook**|webhook|`required`|**type**: `string`<br>**scope**: `webhook`<br>[**Incoming webhook**](https://api.slack.com/incoming-webhooks) of the slack channel to which notifications should be sent. If the URL is not configured, notifications will not be sent.|
 ||slackName||**type**: `string`<br>**scope**: `webhook`<br>**default**: `"WebdriverIO Reporter"`<br>The value of username will appear in the slack notification as the user who sent it.|
 ||slackIconUrl||**type**: `string`<br>**scope**: `webhook`<br>**default**: `"https://webdriver.io/img/webdriverio.png"`<br>The url of the Icon to be displayed in the slack|
-|**web-api**|slackBotToken|`required`|**type**: `string`<br>**scope**: `web-api`<br>[**Web API**](https://api.slack.com/web) of the slack channel to which notifications should be sent. [A bot user token](https://api.slack.com/legacy/oauth#bots) is required. Bot access tokens always begin with `xoxb`.|
-||channel|`required`|**type**: `string`<br>**scope**: `web-api`<br>Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name. [See below](https://api.slack.com/methods/chat.postMessage#text_usage) for more details.<br>_[`"How to find channel ID" - stackoverflow -`](https://stackoverflow.com/questions/57139545/how-can-i-see-slack-bot-info-like-user-id-and-bot-id-without-making-api-call)_|
+|**web-api**|slackBotToken|`required`|**type**: `string`<br>**scope**: `web-api`<br>[**Web API**](https://api.slack.com/web) of the slack channel to which notifications should be sent. [A bot user token](https://api.slack.com/legacy/oauth#bots) is required. Bot access tokens always begin with `xoxb`.<br>The bot token requires the OAuth scope of [`chat:write`](https://api.slack.com/scopes/chat:write), [`files:write`](https://api.slack.com/scopes/files:write).<br>[See below](https://api.slack.com/methods/chat.postMessage#text_usage) for more details.|
+||channel|`required`|**type**: `string`<br>**scope**: `web-api`<br>Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name. [See below](https://api.slack.com/legacy/oauth-scopes) for more details.<br>_[`"How to find channel ID" - stackoverflow -`](https://stackoverflow.com/questions/57139545/how-can-i-see-slack-bot-info-like-user-id-and-bot-id-without-making-api-call)_|
 ||uploadScreenshotOfFailedCase||**type**: `boolean`<br>**scope**: `web-api`<br>**default**: `false`<br>Set this option to true to attach a screenshot to the failed case.|
 |**common**|notifyTestStartMessage||**type**: `boolean`<br>**scope**: `webhook`, `web-api`<br>**default**: `true`<br>Set this option to true to send notifications test start.|
 ||attachFailedCase||**type**: `boolean`<br>**scope**: `webhook`, `web-api`<br>**default**: `true`<br>Set this option to true to attach failed cases in the test results reported to Slack.|
@@ -101,6 +101,8 @@ export.config = {
 };
 ```
 ## Use the Web API
+To use the api, you need a scopes like the one below.<br>
+[`chat:write`](https://api.slack.com/scopes/chat:write), [`files:write`](https://api.slack.com/scopes/files:write). [See below](https://api.slack.com/legacy/oauth-scopes) for more details.<br>
 If you are using web-api, these options are not available.
 > **webhook**: process.env.SLACK_WEBHOOK_URL || "https&#8203;://hooks.slack.com/........"<br>
 > **slackName**: "WebdriverIO Reporter"<br>
