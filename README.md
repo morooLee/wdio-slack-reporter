@@ -19,7 +19,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "1.0.3"
+    "@moroo/wdio-slack-reporter": "1.0.4"
   }
 }
 ```
@@ -150,7 +150,7 @@ export.config = {
   ],
 };
 ```
-## Issues
+## Known Issues
 ### Unsynced
 If the following error occurs, set `reporterSyncInterval` in `wdio.conf.js`.
 > **`ERROR @wdio/runner: Error: Some reporters are still unsynced: SlackReporter`**

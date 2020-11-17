@@ -87,6 +87,11 @@ class SlackReporter extends reporter_1.default {
             this.sendMessage(payload);
         }
     }
+    onSuiteStart(suite) {
+        if (this.title === undefined) {
+            this.title = suite.title || suite.fullTitle;
+        }
+    }
     onHookEnd(hook) {
         if (hook.error) {
             this.stateCounts.failed++;
@@ -186,7 +191,7 @@ class SlackReporter extends reporter_1.default {
                 attachments: [
                     {
                         color: `${this.stateCounts.failed ? FAILED_COLOR : SUCCESS_COLOR}`,
-                        text: `${!this.notifyTestStartMessage ? this.setEnvironment(runner) + '\n' : ''}${result}${this.resultsUrl ? ('\n*Results:* ' + this.resultsUrl) : ''}`,
+                        text: `*Suite*: \`${this.title}\`\n${!this.notifyTestStartMessage ? this.setEnvironment(runner) + '\n' : ''}${result}${this.resultsUrl ? ('\n*Results*: ' + this.resultsUrl) : ''}`,
                         ts: Date.now().toString()
                     }
                 ]
@@ -257,7 +262,11 @@ class SlackReporter extends reporter_1.default {
             platform = capability.platformName || capability.platform || (capability.os ? capability.os + (capability.os_version ? ` ${capability.os_version}` : '') : '(unknown)');
             platformVersion = capability.platformVersion || '';
             deviceName = capability.deviceName || '';
-            env += (runner.isMultiremote ? `- *${driverName[index]}*: ` : '*Driver*: ') + program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` + (deviceName ? `${deviceName} ` : '') + `${platform}` + (platformVersion ? ` (v${platformVersion})` : '') + (index === 0 ? '\n' : '');
+            env += (runner.isMultiremote ? `- *${driverName[index]}*: ` : '*Driver*: ')
+                + (program ? program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` : '')
+                + (deviceName ? `${deviceName} ` : '')
+                + (platform ? platform + (platformVersion ? ` (v${platformVersion})` : '') : '')
+                + (index === 0 ? '\n' : '');
         });
         return env;
     }

@@ -69,7 +69,8 @@ export class SlackReporter extends WDIOReporter {
   private isCompletedReport: boolean
   private stateCounts: StateCounts;
   private failedMetaData: FailedMetaData[];
-
+  private title: string | undefined;
+  
   constructor (options: SlackReporterOptions) {
     if (!options.webhook && !options.slackBotToken) {
       const errorMessage = 'Slack Webhook URL or Slack Bot Token is not configured, notifications will not be sent to slack.';
@@ -144,7 +145,11 @@ export class SlackReporter extends WDIOReporter {
   // onBeforeCommand() {}
   // onAfterCommand() {}
   // onScreenshot() {}
-  // onSuiteStart() {}
+  onSuiteStart(suite: WDIOReporter.Suite): void {
+    if(this.title === undefined) {
+      this.title = suite.title || suite.fullTitle;
+    }
+  }
   // onHookStart() {}
   onHookEnd(hook: Hook): void {
     if (hook.error) {
@@ -250,7 +255,7 @@ export class SlackReporter extends WDIOReporter {
       attachments: [
         {
           color: `${this.stateCounts.failed ? FAILED_COLOR : SUCCESS_COLOR}`,
-          text: `${!this.notifyTestStartMessage ? this.setEnvironment(runner) + '\n' : '' }${result}${this.resultsUrl ? ('\n*Results:* ' + this.resultsUrl) : ''}`,
+          text: `*Suite*: \`${this.title}\`\n${!this.notifyTestStartMessage ? this.setEnvironment(runner) + '\n' : '' }${result}${this.resultsUrl ? ('\n*Results*: ' + this.resultsUrl) : ''}`,
           ts: Date.now().toString()
         }
       ]
@@ -328,7 +333,11 @@ export class SlackReporter extends WDIOReporter {
       platformVersion = capability.platformVersion || '';
       deviceName = capability.deviceName || '';
 
-      env += (runner.isMultiremote ? `- *${driverName[index]}*: ` : '*Driver*: ') + program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` + (deviceName ? `${deviceName} ` : '') + `${platform}` + (platformVersion ? ` (v${platformVersion})` : '') + (index === 0 ? '\n' : '')
+      env += (runner.isMultiremote ? `- *${driverName[index]}*: ` : '*Driver*: ')
+        + (program ? program + (programVersion ? ` (v${programVersion}) ` : ' ') + `on ` : '')
+        + (deviceName ? `${deviceName} ` : '')
+        + (platform ? platform + (platformVersion ? ` (v${platformVersion})` : '') : '')
+        + (index === 0 ? '\n' : '')
     })
       
     return env;

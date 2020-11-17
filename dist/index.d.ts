@@ -32,9 +32,11 @@ export declare class SlackReporter extends WDIOReporter {
     private isCompletedReport;
     private stateCounts;
     private failedMetaData;
+    private title;
     constructor(options: SlackReporterOptions);
     get isSynchronised(): boolean;
     onRunnerStart(runner: any): void;
+    onSuiteStart(suite: WDIOReporter.Suite): void;
     onHookEnd(hook: Hook): void;
     onTestPass(): void;
     onTestFail(test: Test): Promise<void>;
