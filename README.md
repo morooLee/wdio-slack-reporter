@@ -16,7 +16,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.2"
+    "@moroo/wdio-slack-reporter": "2.0.3"
   }
 }
 ```
@@ -397,7 +397,7 @@ export.config = {
 ```
 
 ### Jasmine Option - expectationResultHandler
-Adding the uploadFailedTestScreenshot function here doesn't work either.
+Adding the uploadFailedTestScreenshot function here doesn't work either.<br />
 This is because the function works after every test, so the current test is unknown.
 ```js
 // wdio.conf.js

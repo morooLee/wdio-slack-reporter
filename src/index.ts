@@ -612,7 +612,7 @@ class SlackReporter extends WDIOReporter {
 		const counts = this.getCounts(stateCounts);
 		const payload: ChatPostMessageArguments | IncomingWebhookSendArguments = {
 			channel: this._channel,
-			text: `${this._symbols.start} End of test${
+			text: `${this._symbols.finished} End of test${
 				this._title && ' - ' + this._title
 			}\n${counts}`,
 			blocks: [
@@ -620,7 +620,7 @@ class SlackReporter extends WDIOReporter {
 					type: 'header',
 					text: {
 						type: 'plain_text',
-						text: `${this._symbols.start} End of test - ${
+						text: `${this._symbols.finished} End of test - ${
 							this._symbols.watch
 						} ${runnerStats.duration / 1000}s`,
 						emoji: true,
