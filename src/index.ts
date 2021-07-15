@@ -923,4 +923,65 @@ class SlackReporter extends WDIOReporter {
 }
 
 export default SlackReporter;
+
+export { SlackReporterOptions };
 export * from './types';
+
+declare global {
+	namespace NodeJS {
+		interface Process {
+			emit(
+				event: typeof EVENTS.POST_MESSAGE,
+				payload: ChatPostMessageArguments
+			): boolean;
+			emit(
+				event: typeof EVENTS.UPLOAD,
+				payload: FilesUploadArguments
+			): Promise<WebAPICallResult>;
+			emit(
+				event: typeof EVENTS.SEND,
+				payload: IncomingWebhookSendArguments
+			): boolean;
+			emit(event: typeof EVENTS.SCREENSHOT, buffer: Buffer): boolean;
+			emit(
+				event: typeof EVENTS.RESULT,
+				args: {
+					result: WebAPICallResult | IncomingWebhookResult | undefined;
+					error: any;
+				}
+			): boolean;
+
+			on(
+				event: typeof EVENTS.POST_MESSAGE,
+				listener: (
+					payload: ChatPostMessageArguments
+				) => Promise<WebAPICallResult>
+			): this;
+			on(
+				event: typeof EVENTS.UPLOAD,
+				listener: (payload: FilesUploadArguments) => Promise<WebAPICallResult>
+			): this;
+			on(
+				event: typeof EVENTS.SEND,
+				listener: (
+					payload: IncomingWebhookSendArguments
+				) => Promise<IncomingWebhookResult>
+			): this;
+			on(
+				event: typeof EVENTS.SCREENSHOT,
+				listener: (buffer: Buffer) => void
+			): this;
+			once(
+				event: typeof EVENTS.RESULT,
+				listener: (args: {
+					result: WebAPICallResult | IncomingWebhookResult | undefined;
+					error: any;
+				}) => Promise<void>
+			): this;
+		}
+	}
+	namespace WebdriverIO {
+		// eslint-disable-next-line @typescript-eslint/no-empty-interface
+		interface ReporterOption extends SlackReporterOptions {}
+	}
+}
