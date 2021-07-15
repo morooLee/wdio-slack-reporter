@@ -1,13 +1,13 @@
 @moroo/wdio-slack-reporter
 ========================
 Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).<br />
-This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.
+This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x and above.
 
 ## Slack notification screenshot
 <img src="https://raw.githubusercontent.com/morooLee/wdio-slack-reporter/master/docs/Notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
 
 ## WebdriverIO 4.x or lower Compatibility
-> This package only supports up to WebdriverIO 6.x.
+> This package only supports up to WebdriverIO 6.x. <br />
 > If you are using 4.x or lower, use to [wdio-slack-reporter](https://github.com/kmnaid/wdio-slack-reporter).   
 
 ## Installation
@@ -16,7 +16,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.1"
+    "@moroo/wdio-slack-reporter": "2.0.2"
   }
 }
 ```
