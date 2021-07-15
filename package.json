@@ -1,19 +1,15 @@
 {
   "name": "@moroo/wdio-slack-reporter",
-  "version": "1.0.5",
   "description": "Reporter from WebdriverIO using Incoming webhook and Web API to send results to Slack.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "test": "jest"
-  },
   "author": {
     "name": "moroo Lee",
     "email": "moroo.lee@gmail.com"
   },
   "homepage": "https://github.com/morooLee/wdio-slack-reporter",
   "license": "MIT",
+  "version": "2.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "keywords": [
     "webdriverio",
     "wdio",
@@ -29,22 +25,31 @@
     "type": "git",
     "url": "https://github.com/morooLee/wdio-slack-reporter.git"
   },
+  "scripts": {
+    "build": "yarn tsc",
+    "test": "yarn jest --detectOpenHandles",
+    "test:cov": "yarn jest --detectOpenHandles --coverage"
+  },
   "dependencies": {
-    "@slack/web-api": "^5.11.0",
-    "@slack/webhook": "^5.0.3",
-    "@wdio/reporter": "^6.1.23"
-  },
-  "peerDependencies": {
-    "@wdio/cli": "^6.0.1"
-  },
-  "publishConfig": {
-    "access": "public"
+    "@slack/types": "^2.0.0",
+    "@slack/web-api": "^6.1.0",
+    "@slack/webhook": "^6.0.0",
+    "@wdio/logger": "^7.5.3",
+    "@wdio/reporter": "7.7.5",
+    "@wdio/types": "7.7.5"
   },
   "devDependencies": {
-    "@slack/types": "^1.7.0",
-    "@types/jest": "^26.0.4",
-    "jest": "^26.1.0",
-    "ts-jest": "^26.1.3",
-    "typescript": "^3.9.7"
+    "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.30.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "jest": "^27.0.6",
+    "prettier": "^2.2.1",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.1.0",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.2.4"
   }
 }

@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
+    "baseUrl" : "." , 
+    "target": "ES2015",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "declaration": true,
-    "sourceMap": true,
     "outDir": "./dist",
     "strict": true,
-    "removeComments": true,
-    "esModuleInterop" : true,
+    "removeComments": false,
+    "esModuleInterop": true,
+    "noImplicitThis": true
   },
   "include": [
-    "lib/**/*",
+    "src/**/*",
   ],
   "exclude": [
-    "node_modules",
-    "/test",
-    "/docs"
+    "/coverage",
+    "/dist",
+    "/docs",
+    "/node_modules",
   ]
 }
