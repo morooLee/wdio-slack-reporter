@@ -16,7 +16,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.4"
+    "@moroo/wdio-slack-reporter": "2.0.5"
   }
 }
 ```
@@ -101,7 +101,6 @@ export.config = {
         slackOptions: {
           type: 'webhook',
           webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
-          channel: process.env.SLACK_CHANNEL || 'Cxxxxxxxxxx',
           slackName: "WebdriverIO Reporter",
           slackIconUrl: "https://webdriver.io/img/webdriverio.png",
         },
