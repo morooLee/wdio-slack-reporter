@@ -18,9 +18,9 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 
 ```json
 {
-	"devDependencies": {
-		"@moroo/wdio-slack-reporter": "2.0.7"
-	}
+  "devDependencies": {
+    "@moroo/wdio-slack-reporter": "2.0.8"
+  }
 }
 ```
 
@@ -98,7 +98,7 @@ If both `web-api` and `webhook` are set, `web-api` is used.
 ||resultsUrl||**type**: `string`<br />**scope**: `webhook`, `web-api`<br />Provide a link to the test results. It is a clickable link in the notification.|
 ||notifyTestStartMessage||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to send notifications test start.|
 ||notifyFailedCase||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to attach failed cases in the test results reported to Slack.|
-||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - :white*check_mark:<br />***failed**_ - :x:<br />_**skipped**_ - :double_vertical_bar:<br />_**pending**_ - :grey_question:<br />_**start**_ - :rocket:<br />_**finished**_ - :checkered_flag:<br />_**watch**\_ - :stopwatch:</Blockquote>This option changes the emoji set by default.|
+||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - :white\*check\*mark:<br />**\*failed\*** - :x:<br />_**skipped**_ - :double\*vertical*bar:<br />**\*pending*** - :grey*question:<br />***start**_ - :rocket:<br />_**finished**_ - :checkered_flag:<br />_**watch**\_ - :stopwatch:</Blockquote>This option changes the emoji set by default.|
 ||createStartPayload||**type**: `function`<br />**scope** - `webhook`, `web-api`<br />This option customizes the payload that is notified at the start of the test.|
 ||createFailedTestPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified at the failure of the test.|
 ||createResultPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified of the results of the test.|
@@ -257,15 +257,15 @@ Get the results url.
 import SlackReporter from '@moroo/wdio-slack-reporter';
 
 describe('Get the resultsUrl value', function () {
-	before(function () {
-		const resultsUrl = SlackReporter.getResultsUrl();
-		if (resultsUrl) {
-			// do something...
-		}
-	});
-	it('Do something', function () {
-		// do something...
-	});
+  before(function () {
+    const resultsUrl = SlackReporter.getResultsUrl();
+    if (resultsUrl) {
+      // do something...
+    }
+  });
+  it('Do something', function () {
+    // do something...
+  });
 });
 ```
 
@@ -282,13 +282,13 @@ import SlackReporter from '@moroo/wdio-slack-reporter';
 import { RESULTS_URL } from '../constants';
 
 describe('Set the resultsUrl value', function () {
-	before(function () {
-		const resultsUrl = RESULTS_URL + new Date().toISOString();
-		SlackReporter.setResultsUrl(resultsUrl);
-	});
-	it('Do something', function () {
-		// do something...
-	});
+  before(function () {
+    const resultsUrl = RESULTS_URL + new Date().toISOString();
+    SlackReporter.setResultsUrl(resultsUrl);
+  });
+  it('Do something', function () {
+    // do something...
+  });
 });
 ```
 
@@ -331,17 +331,17 @@ ERROR @moroo/slack-wdio-reporter: Not using web-api.
 ```js
 // post.spec.ts
 import SlackReporter, {
-	ChatPostMessageArguments,
-	WebAPICallResult,
+  ChatPostMessageArguments,
+  WebAPICallResult,
 } from '@moroo/wdio-slack-reporter';
 
 describe('Post Function Test', function () {
-	it('Post a message', async function () {
-		const payload: ChatPostMessageArguments = {
-			// do something...
-		};
-		const result: WebAPICallResult = await SlackReporter.post(payload);
-	});
+  it('Post a message', async function () {
+    const payload: ChatPostMessageArguments = {
+      // do something...
+    };
+    const result: WebAPICallResult = await SlackReporter.post(payload);
+  });
 });
 ```
 
@@ -360,17 +360,17 @@ ERROR @moroo/slack-wdio-reporter: Not using web-api.
 ```js
 // upload.spec.ts
 import SlackReporter, {
-	FilesUploadArguments,
-	WebAPICallResult,
+  FilesUploadArguments,
+  WebAPICallResult,
 } from '@moroo/wdio-slack-reporter';
 
 describe('Upload Function Test', function () {
-	it('Upload a files', async function () {
-		const payload: FilesUploadArguments = {
-			// do something...
-		};
-		const result: WebAPICallResult = await SlackReporter.upload(payload);
-	});
+  it('Upload a files', async function () {
+    const payload: FilesUploadArguments = {
+      // do something...
+    };
+    const result: WebAPICallResult = await SlackReporter.upload(payload);
+  });
 });
 ```
 
@@ -389,17 +389,17 @@ ERROR @moroo/slack-wdio-reporter: Not using webhook.
 ```js
 // send.spec.ts
 import SlackReporter, {
-	IncomingWebhookSendArguments,
-	IncomingWebhookResult,
+  IncomingWebhookSendArguments,
+  IncomingWebhookResult,
 } from '@moroo/wdio-slack-reporter';
 
 describe('Sand Function Test', function () {
-	it('Send a message', async function () {
-		const payload: IncomingWebhookSendArguments = {
-			// do something...
-		};
-		const result: IncomingWebhookResult = await SlackReporter.send(payload);
-	});
+  it('Send a message', async function () {
+    const payload: IncomingWebhookSendArguments = {
+      // do something...
+    };
+    const result: IncomingWebhookResult = await SlackReporter.send(payload);
+  });
 });
 ```
 
