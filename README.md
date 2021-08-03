@@ -19,7 +19,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.8"
+    "@moroo/wdio-slack-reporter": "2.0.9"
   }
 }
 ```
@@ -98,7 +98,7 @@ If both `web-api` and `webhook` are set, `web-api` is used.
 ||resultsUrl||**type**: `string`<br />**scope**: `webhook`, `web-api`<br />Provide a link to the test results. It is a clickable link in the notification.|
 ||notifyTestStartMessage||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to send notifications test start.|
 ||notifyFailedCase||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to attach failed cases in the test results reported to Slack.|
-||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - :white\*check\*mark:<br />**\*failed\*** - :x:<br />_**skipped**_ - :double\*vertical*bar:<br />**\*pending*** - :grey*question:<br />***start**_ - :rocket:<br />_**finished**_ - :checkered_flag:<br />_**watch**\_ - :stopwatch:</Blockquote>This option changes the emoji set by default.|
+||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - :white\*check\*mark:<br />**\*failed\*** - :x:<br />_**skipped**_ - :double\*vertical\*bar:<br />**\*pending\*** - :grey\*question:<br />**\*start**_ - :rocket:<br />_**finished**_ - :checkered_flag:<br />_**watch**\_ - :stopwatch:</Blockquote>This option changes the emoji set by default.|
 ||createStartPayload||**type**: `function`<br />**scope** - `webhook`, `web-api`<br />This option customizes the payload that is notified at the start of the test.|
 ||createFailedTestPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified at the failure of the test.|
 ||createResultPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified of the results of the test.|
