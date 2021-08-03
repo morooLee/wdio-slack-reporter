@@ -7,7 +7,7 @@
 	},
 	"homepage": "https://github.com/morooLee/wdio-slack-reporter",
 	"license": "MIT",
-	"version": "2.0.6",
+	"version": "2.0.7",
 	"main": "build/index.js",
 	"types": "build/index.d.ts",
 	"keywords": [

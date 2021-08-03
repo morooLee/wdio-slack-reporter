@@ -524,7 +524,7 @@ class SlackReporter extends WDIOReporter {
 		runnerStats: RunnerStats
 	): ChatPostMessageArguments | IncomingWebhookSendArguments {
 		const text = `${
-			this._title && '*Title*: `' + this._title + '`\n'
+			this._title ? '*Title*: `' + this._title + '`\n' : ''
 		}${this.getEnviromentCombo(
 			runnerStats.capabilities,
 			runnerStats.isMultiremote
@@ -533,7 +533,7 @@ class SlackReporter extends WDIOReporter {
 		const payload: ChatPostMessageArguments | IncomingWebhookSendArguments = {
 			channel: this._channel,
 			text: `${this._symbols.start} Start testing${
-				this._title && 'for ' + this._title
+				this._title ? 'for ' + this._title : ''
 			}`,
 			blocks: [
 				{
@@ -613,7 +613,7 @@ class SlackReporter extends WDIOReporter {
 		const payload: ChatPostMessageArguments | IncomingWebhookSendArguments = {
 			channel: this._channel,
 			text: `${this._symbols.finished} End of test${
-				this._title && ' - ' + this._title
+				this._title ? ' - ' + this._title : ''
 			}\n${counts}`,
 			blocks: [
 				{
@@ -630,7 +630,7 @@ class SlackReporter extends WDIOReporter {
 			attachments: [
 				{
 					color: FINISHED_COLOR,
-					text: `*Title*: \`${this._title}\`\n${
+					text: `${this._title ? `*Title*: \`${this._title}\`\n` : ''}${
 						resltsUrl ? `*Results*: <${resltsUrl}>\n` : ''
 					}${counts}`,
 					ts: Date.now().toString(),
@@ -648,7 +648,7 @@ class SlackReporter extends WDIOReporter {
 		const counts = this.getCounts(stateCounts);
 		const payload: ChatPostMessageArguments | IncomingWebhookSendArguments = {
 			channel: this._channel,
-			text: `${this._title && this._title + '\n'}${counts}`,
+			text: `${this._title ? this._title + '\n' : ''}${counts}`,
 			blocks: [
 				{
 					type: 'header',

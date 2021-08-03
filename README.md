@@ -1,31 +1,39 @@
-@moroo/wdio-slack-reporter
-========================
+# @moroo/wdio-slack-reporter
+
 Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).<br />
 This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x and above.
 
 ## Slack notification screenshot
+
 <img src="https://raw.githubusercontent.com/morooLee/wdio-slack-reporter/master/docs/Notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
 
 ## WebdriverIO 4.x or lower Compatibility
+
 > This package only supports up to WebdriverIO 6.x. <br />
-> If you are using 4.x or lower, use to [wdio-slack-reporter](https://github.com/kmnaid/wdio-slack-reporter).   
+> If you are using 4.x or lower, use to [wdio-slack-reporter](https://github.com/kmnaid/wdio-slack-reporter).
 
 ## Installation
+
 The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in your `package.json`.
 
 ```json
 {
-  "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.5"
-  }
+	"devDependencies": {
+		"@moroo/wdio-slack-reporter": "2.0.7"
+	}
 }
 ```
-You can simple do it by:   
-* NPM
+
+You can simple do it by:
+
+- NPM
+
 ```bash
 npm install @moroo/wdio-slack-reporter --save-dev
 ```
-* Yarn
+
+- Yarn
+
 ```bash
 yarn add -D @moroo/wdio-slack-reporter
 ```
@@ -33,11 +41,21 @@ yarn add -D @moroo/wdio-slack-reporter
 Instructions on how to install `WebdriverIO` can be found [here](https://webdriver.io/docs/gettingstarted.html).
 
 ## Configuration
+
 At the top of the wdio.conf.js-file, add:
- 
+
+### ES5
+
 ```js
 // wdio.conf.js
-import SlackReporter from "@moroo/wdio-slack-reporter";
+const SlackReporter = require('@moroo/wdio-slack-reporter').default;
+```
+
+### ES6
+
+```js
+// wdio.conf.js
+import SlackReporter from '@moroo/wdio-slack-reporter';
 ```
 
 In order to use the reporter you need to add slack to your reporters array in wdio.conf.js
@@ -59,6 +77,7 @@ export.config = {
   ],
 };
 ```
+
 ## Configuration Options
 
 The following configuration options are supported.<br />
@@ -79,16 +98,18 @@ If both `web-api` and `webhook` are set, `web-api` is used.
 ||resultsUrl||**type**: `string`<br />**scope**: `webhook`, `web-api`<br />Provide a link to the test results. It is a clickable link in the notification.|
 ||notifyTestStartMessage||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to send notifications test start.|
 ||notifyFailedCase||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to attach failed cases in the test results reported to Slack.|
-||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - :white_check_mark:<br />_**failed**_ - :x:<br />_**skipped**_ - :double_vertical_bar:<br />_**pending**_ - :grey_question:<br />_**start**_ - :rocket:<br />_**finished**_ - :checkered_flag:<br />_**watch**_ - :stopwatch:</Blockquote>This option changes the emoji set by default.|
+||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - :white*check_mark:<br />***failed**_ - :x:<br />_**skipped**_ - :double_vertical_bar:<br />_**pending**_ - :grey_question:<br />_**start**_ - :rocket:<br />_**finished**_ - :checkered_flag:<br />_**watch**\_ - :stopwatch:</Blockquote>This option changes the emoji set by default.|
 ||createStartPayload||**type**: `function`<br />**scope** - `webhook`, `web-api`<br />This option customizes the payload that is notified at the start of the test.|
 ||createFailedTestPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified at the failure of the test.|
 ||createResultPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified of the results of the test.|
 
 ## Use the Incoming Webhook
+
 If you are using webhook, can not thread and upload.<br />
 Therefore, functions related to `upload` and `thread` are not available.
 
 ### Configuration Example
+
 ```js
 // wdio.conf.js
 import SlackReporter from "@moroo/wdio-slack-reporter";
@@ -144,11 +165,14 @@ export.config = {
   ],
 };
 ```
+
 ## Use the Web API
+
 To use the api, you need a scopes like the one below.<br />
 [`chat:write`](https://api.slack.com/scopes/chat:write), [`files:write`](https://api.slack.com/scopes/files:write). [See below](https://api.slack.com/legacy/oauth-scopes) for more details.<br />
 
 ### Configuration Example
+
 ```js
 // wdio.conf.js
 import SlackReporter from "@moroo/wdio-slack-reporter";
@@ -221,7 +245,9 @@ export.config = {
 ```
 
 ## Supported API
+
 ### getResultsUrl
+
 > **type**: `() => string | undefined`
 
 Get the results url.
@@ -231,19 +257,20 @@ Get the results url.
 import SlackReporter from '@moroo/wdio-slack-reporter';
 
 describe('Get the resultsUrl value', function () {
-  before(function () {
-    const resultsUrl = SlackReporter.getResultsUrl();
-    if (resultsUrl) {
-    // do something...
-    }
-  })
-  it('Do something', function () {
-    // do something...
-  })
-})
+	before(function () {
+		const resultsUrl = SlackReporter.getResultsUrl();
+		if (resultsUrl) {
+			// do something...
+		}
+	});
+	it('Do something', function () {
+		// do something...
+	});
+});
 ```
 
 ### setResultsUrl
+
 > **type**: `(url: string) => void`
 
 Set the results url.<br />
@@ -252,20 +279,21 @@ _(This is useful if the url with test results changes every time.)_
 ```js
 // setResultsUrl.spec.ts
 import SlackReporter from '@moroo/wdio-slack-reporter';
-import { RESULTS_URL } from '../constants'
+import { RESULTS_URL } from '../constants';
 
 describe('Set the resultsUrl value', function () {
-  before(function () {
-    const resultsUrl = RESULTS_URL + new Date().toISOString();
-    SlackReporter.setResultsUrl(resultsUrl);
-  })
-  it('Do something', function () {
-    // do something...
-  })
-})
+	before(function () {
+		const resultsUrl = RESULTS_URL + new Date().toISOString();
+		SlackReporter.setResultsUrl(resultsUrl);
+	});
+	it('Do something', function () {
+		// do something...
+	});
+});
 ```
 
 ### uploadFailedTestScreenshot
+
 > **type**: `(data: string | Buffer) => void`
 
 Add a screenshot as a thread to the failed test notification.<br />
@@ -289,6 +317,7 @@ export.config = {
 ```
 
 ### postMessage
+
 > **type**: `(payload: ChatPostMessageArguments) => Promise<WebAPICallResult>`
 
 Post a message to Slack.<br />
@@ -301,19 +330,23 @@ ERROR @moroo/slack-wdio-reporter: Not using web-api.
 
 ```js
 // post.spec.ts
-import SlackReporter, { ChatPostMessageArguments, WebAPICallResult } from "@moroo/wdio-slack-reporter";
+import SlackReporter, {
+	ChatPostMessageArguments,
+	WebAPICallResult,
+} from '@moroo/wdio-slack-reporter';
 
 describe('Post Function Test', function () {
-  it('Post a message', async function () {
-    const payload: ChatPostMessageArguments = {
-      // do something...
-    }
-    const result: WebAPICallResult = await SlackReporter.post(payload);
-  })
-})
+	it('Post a message', async function () {
+		const payload: ChatPostMessageArguments = {
+			// do something...
+		};
+		const result: WebAPICallResult = await SlackReporter.post(payload);
+	});
+});
 ```
 
 ### upload
+
 > **type**: `(payload: FilesUploadArguments) => Promise<WebAPICallResult>`
 
 Upload a file to Slack.<br />
@@ -326,19 +359,23 @@ ERROR @moroo/slack-wdio-reporter: Not using web-api.
 
 ```js
 // upload.spec.ts
-import SlackReporter, { FilesUploadArguments, WebAPICallResult } from "@moroo/wdio-slack-reporter";
+import SlackReporter, {
+	FilesUploadArguments,
+	WebAPICallResult,
+} from '@moroo/wdio-slack-reporter';
 
 describe('Upload Function Test', function () {
-  it('Upload a files', async function () {
-    const payload: FilesUploadArguments = {
-      // do something...
-    }
-    const result: WebAPICallResult = await SlackReporter.upload(payload);
-  })
-})
+	it('Upload a files', async function () {
+		const payload: FilesUploadArguments = {
+			// do something...
+		};
+		const result: WebAPICallResult = await SlackReporter.upload(payload);
+	});
+});
 ```
 
 ### send
+
 > **type**: `(payload: IncomingWebhookSendArguments) => Promise<IncomingWebhookResult>`
 
 Send a message to Slack.<br />
@@ -351,20 +388,25 @@ ERROR @moroo/slack-wdio-reporter: Not using webhook.
 
 ```js
 // send.spec.ts
-import SlackReporter, { IncomingWebhookSendArguments, IncomingWebhookResult } from "@moroo/wdio-slack-reporter";
+import SlackReporter, {
+	IncomingWebhookSendArguments,
+	IncomingWebhookResult,
+} from '@moroo/wdio-slack-reporter';
 
 describe('Sand Function Test', function () {
-  it('Send a message', async function () {
-    const payload: IncomingWebhookSendArguments = {
-      // do something...
-    }
-    const result: IncomingWebhookResult = await SlackReporter.send(payload);
-  })
-})
+	it('Send a message', async function () {
+		const payload: IncomingWebhookSendArguments = {
+			// do something...
+		};
+		const result: IncomingWebhookResult = await SlackReporter.send(payload);
+	});
+});
 ```
 
 ## Add Screenshot
+
 If you want to add a screenshot as a thread to the failed test notification, added the `uploadFailedTestScreenshot` function after taking the screenshot.
+
 ```js
 // wdio.conf.js
 export.config = {
@@ -378,8 +420,11 @@ export.config = {
 ```
 
 ## Known Issues
+
 ### Unsynced
+
 If the following error occurs, set `reporterSyncInterval`, `reporterSyncTimeout` in `wdio.conf.js`.
+
 ```bash
 ERROR @wdio/runner: Error: Some reporters are still unsynced: SlackReporter
 ```
@@ -396,8 +441,10 @@ export.config = {
 ```
 
 ### Jasmine Option - expectationResultHandler
+
 Adding the uploadFailedTestScreenshot function here doesn't work either.<br />
 This is because the function works after every test, so the current test is unknown.
+
 ```js
 // wdio.conf.js
 export.config = {
