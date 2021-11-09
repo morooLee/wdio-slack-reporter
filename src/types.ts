@@ -57,7 +57,7 @@ export interface SlackWebhookOptions {
 export type SlackOptions = SlackWebApiOptions | SlackWebhookOptions;
 
 export interface SlackReporterOptions {
-  slackOptions: SlackOptions;
+  slackOptions?: SlackOptions;
   emojiSymbols?: EmojiSymbols;
   title?: string;
   resultsUrl?: string;

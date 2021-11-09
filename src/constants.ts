@@ -30,6 +30,8 @@ export const EVENTS = {
 } as const;
 
 export const ERROR_MESSAGES = {
+  UNDEFINED_SLACK_OPTION:
+    'Slack Option is undefined. Please Check Slack Option.',
   NOT_USING_WEBHOOK: 'Not using webhook.',
   NOT_USING_WEB_API: 'Not using web-api.',
   DISABLED_OPTIONS:

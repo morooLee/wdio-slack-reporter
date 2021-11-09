@@ -1,15 +1,18 @@
 {
+  "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "es5",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "declaration": true,
     "outDir": "./build",
-    "strict": true,
+    "rootDir": "./src",
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "resolveJsonModule": true,
     "removeComments": false,
+    "strictFunctionTypes": false,
     "esModuleInterop": true,
-    "noImplicitThis": true
+    "lib": ["DOM", "ES2019"],
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["/coverage", "/dist", "/docs", "/node_modules"]

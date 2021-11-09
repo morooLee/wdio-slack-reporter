@@ -73,6 +73,11 @@ class SlackReporter extends WDIOReporter {
   constructor(options: SlackReporterOptions) {
     super(Object.assign({ stdout: true }, options));
 
+    if (!options.slackOptions) {
+      log.error(ERROR_MESSAGES.UNDEFINED_SLACK_OPTION);
+      log.debug(options.slackOptions);
+      throw new Error(ERROR_MESSAGES.UNDEFINED_SLACK_OPTION);
+    }
     if (options.slackOptions.type === 'web-api') {
       this._client = new WebClient(options.slackOptions.slackBotToken);
       log.info('Created Slack Web API Client Instance.');
@@ -928,6 +933,10 @@ export { SlackReporterOptions };
 export * from './types';
 
 declare global {
+  namespace WebdriverIO {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface ReporterOption extends SlackReporterOptions {}
+  }
   namespace NodeJS {
     interface Process {
       emit(
