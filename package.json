@@ -7,7 +7,7 @@
   },
   "homepage": "https://github.com/morooLee/wdio-slack-reporter",
   "license": "MIT",
-  "version": "2.0.12",
+  "version": "2.0.13",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "keywords": [
@@ -36,16 +36,16 @@
     "@slack/web-api": "^6.1.0",
     "@slack/webhook": "^6.0.0",
     "@wdio/logger": "^7.5.3",
-    "@wdio/reporter": "7.7.5",
-    "@wdio/types": "7.7.5"
+    "@wdio/reporter": "7.16.3",
+    "@wdio/types": "7.16.3"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.23",
-    "@typescript-eslint/eslint-plugin": "^4.22.0",
-    "@typescript-eslint/parser": "^4.22.0",
-    "eslint": "^7.30.0",
+    "@types/jest": "^27.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.3.1",
+    "@typescript-eslint/parser": "^5.3.1",
+    "eslint": "^8.2.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.0.6",
     "prettier": "^2.2.1",
     "ts-jest": "^27.0.3",

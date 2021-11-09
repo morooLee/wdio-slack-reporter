@@ -928,7 +928,6 @@ class SlackReporter extends WDIOReporter {
 }
 
 export default SlackReporter;
-
 export { SlackReporterOptions };
 export * from './types';
 
