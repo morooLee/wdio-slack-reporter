@@ -2,6 +2,7 @@
 import { ChatPostMessageArguments, FilesUploadArguments } from '@slack/web-api';
 import { IncomingWebhookSendArguments } from '@slack/webhook';
 import { RunnerStats, TestStats } from '@wdio/reporter';
+import { Reporters } from '@wdio/types';
 import { SLACK_REQUEST_TYPE } from './constants';
 
 export {
@@ -56,7 +57,7 @@ export interface SlackWebhookOptions {
 
 export type SlackOptions = SlackWebApiOptions | SlackWebhookOptions;
 
-export interface SlackReporterOptions {
+export interface SlackReporterOptions extends Reporters.Options {
   slackOptions?: SlackOptions;
   emojiSymbols?: EmojiSymbols;
   title?: string;
