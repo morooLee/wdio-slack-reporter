@@ -130,7 +130,10 @@ class SlackReporter extends WDIOReporter {
       watch: options.emojiSymbols?.watch || EMOJI_SYMBOLS.STOPWATCH,
     };
     this._title = options.title;
-    SlackReporter.setResultsUrl(options.resultsUrl);
+
+    if (options.resultsUrl !== undefined) {
+      SlackReporter.setResultsUrl(options.resultsUrl);
+    }
 
     if (options.notifyTestStartMessage !== undefined) {
       this._notifyTestStartMessage = options.notifyTestStartMessage;
