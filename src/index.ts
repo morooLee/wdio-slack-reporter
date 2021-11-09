@@ -165,10 +165,10 @@ class SlackReporter extends WDIOReporter {
   }
 
   static getResultsUrl(): string | undefined {
-    return this.resultsUrl;
+    return SlackReporter.resultsUrl;
   }
   static setResultsUrl(url: string | undefined): void {
-    this.resultsUrl = url;
+    SlackReporter.resultsUrl = url;
   }
   /**
    * Upload failed test scrteenshot
