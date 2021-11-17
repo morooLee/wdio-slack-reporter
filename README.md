@@ -19,7 +19,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.17"
+    "@moroo/wdio-slack-reporter": "2.0.18"
   }
 }
 ```

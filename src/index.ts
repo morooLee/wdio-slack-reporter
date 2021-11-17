@@ -752,7 +752,7 @@ class SlackReporter extends WDIOReporter {
     }
 
     this._orderedSuites = [];
-    for (const uid in this._suiteUids) {
+    for (const uid of this._suiteUids) {
       for (const [suiteUid, suite] of Object.entries(this.suites)) {
         if (suiteUid !== uid) {
           continue;
