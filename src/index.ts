@@ -65,7 +65,7 @@ class SlackReporter extends WDIOReporter {
   private _interval: NodeJS.Timeout;
   private _hasRunnerEnd = false;
   private _lastScreenshotBuffer?: Buffer = undefined;
-  private _suiteUids = new Set();
+  private _suiteUids = new Set<string>();
   private _orderedSuites: SuiteStats[] = [];
   private _indents: number = 0;
   private _suiteIndents: Record<string, number> = {};
@@ -762,7 +762,7 @@ class SlackReporter extends WDIOReporter {
     }
 
     this._orderedSuites = [];
-    for (const uid of this._suiteUids) {
+    this._suiteUids.forEach((uid) => {
       for (const [suiteUid, suite] of Object.entries(this.suites)) {
         if (suiteUid !== uid) {
           continue;
@@ -770,7 +770,7 @@ class SlackReporter extends WDIOReporter {
 
         this._orderedSuites.push(suite);
       }
-    }
+    });
 
     return this._orderedSuites;
   }
