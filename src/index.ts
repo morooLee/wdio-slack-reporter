@@ -59,8 +59,9 @@ class SlackReporter extends WDIOReporter {
   private _notifyTestStartMessage: boolean = true;
   private _notifyFailedCase: boolean = true;
   private _uploadScreenshotOfFailedCase: boolean = true;
+  private _notifyTestFinishMessage: boolean = true;
   private _notifyDetailResultThread: boolean = true;
-  private _isSynchronising: boolean = false;
+  private _isSynchronizing: boolean = false;
   private _interval: NodeJS.Timeout;
   private _hasRunnerEnd = false;
   private _lastScreenshotBuffer?: Buffer = undefined;
@@ -87,6 +88,11 @@ class SlackReporter extends WDIOReporter {
       });
       this._channel = options.slackOptions.channel;
       if (options.slackOptions.notifyDetailResultThread !== undefined) {
+        if (options.notifyTestFinishMessage === false) {
+          log.warn(
+            'Notify is not possible because the notifyResultMessage option is off.'
+          );
+        }
         this._notifyDetailResultThread =
           options.slackOptions.notifyDetailResultThread;
       }
@@ -141,6 +147,10 @@ class SlackReporter extends WDIOReporter {
 
     if (options.notifyFailedCase !== undefined) {
       this._notifyFailedCase = options.notifyFailedCase;
+    }
+
+    if (options.notifyTestFinishMessage !== undefined) {
+      this._notifyTestFinishMessage = options.notifyTestFinishMessage;
     }
 
     this._interval = global.setInterval(this.sync.bind(this), 100);
@@ -346,7 +356,7 @@ class SlackReporter extends WDIOReporter {
 
   get isSynchronised(): boolean {
     return (
-      this._pendingSlackRequestCount === 0 && this._isSynchronising === false
+      this._pendingSlackRequestCount === 0 && this._isSynchronizing === false
     );
   }
 
@@ -359,7 +369,7 @@ class SlackReporter extends WDIOReporter {
       clearInterval(this._interval);
     }
     if (
-      this._isSynchronising ||
+      this._isSynchronizing ||
       this._slackRequestQueue.length === 0 ||
       this._pendingSlackRequestCount > 0
     ) {
@@ -367,14 +377,14 @@ class SlackReporter extends WDIOReporter {
     }
 
     try {
-      this._isSynchronising = true;
+      this._isSynchronizing = true;
       log.info('Start Synchronising...');
       await this.next();
     } catch (error) {
       log.error(error);
       throw error;
     } finally {
-      this._isSynchronising = false;
+      this._isSynchronizing = false;
       log.info('End Synchronising!!!');
     }
   }
@@ -897,33 +907,35 @@ class SlackReporter extends WDIOReporter {
   }
 
   onRunnerEnd(runnerStats: RunnerStats): void {
-    if (this._client) {
-      this._slackRequestQueue.push({
-        type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
-        payload: this.createResultPayload(
-          runnerStats,
-          this._stateCounts
-        ) as ChatPostMessageArguments,
-      });
-
-      if (this._notifyDetailResultThread) {
+    if (this._notifyTestFinishMessage) {
+      if (this._client) {
         this._slackRequestQueue.push({
           type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
-          payload: this.createResultDetailPayload(
+          payload: this.createResultPayload(
             runnerStats,
             this._stateCounts
           ) as ChatPostMessageArguments,
-          isDetailResult: true,
+        });
+
+        if (this._notifyDetailResultThread) {
+          this._slackRequestQueue.push({
+            type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
+            payload: this.createResultDetailPayload(
+              runnerStats,
+              this._stateCounts
+            ) as ChatPostMessageArguments,
+            isDetailResult: true,
+          });
+        }
+      } else {
+        this._slackRequestQueue.push({
+          type: SLACK_REQUEST_TYPE.WEBHOOK_SEND,
+          payload: this.createResultPayload(
+            runnerStats,
+            this._stateCounts
+          ) as IncomingWebhookSendArguments,
         });
       }
-    } else {
-      this._slackRequestQueue.push({
-        type: SLACK_REQUEST_TYPE.WEBHOOK_SEND,
-        payload: this.createResultPayload(
-          runnerStats,
-          this._stateCounts
-        ) as IncomingWebhookSendArguments,
-      });
     }
 
     this._hasRunnerEnd = true;
