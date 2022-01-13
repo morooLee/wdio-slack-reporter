@@ -19,7 +19,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.20"
+    "@moroo/wdio-slack-reporter": "2.0.21"
   }
 }
 ```
@@ -43,13 +43,6 @@ Instructions on how to install `WebdriverIO` can be found [here](https://webdriv
 ## Configuration
 
 At the top of the wdio.conf.js-file, add:
-
-### ES5
-
-```js
-// wdio.conf.js
-const SlackReporter = require('@moroo/wdio-slack-reporter').default;
-```
 
 ### ES6
 
