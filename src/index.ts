@@ -762,7 +762,7 @@ class SlackReporter extends WDIOReporter {
     }
 
     this._orderedSuites = [];
-    this._suiteUids.forEach((uid) => {
+    for (const uid of this._suiteUids) {
       for (const [suiteUid, suite] of Object.entries(this.suites)) {
         if (suiteUid !== uid) {
           continue;
@@ -770,7 +770,7 @@ class SlackReporter extends WDIOReporter {
 
         this._orderedSuites.push(suite);
       }
-    });
+    }
 
     return this._orderedSuites;
   }
@@ -908,33 +908,38 @@ class SlackReporter extends WDIOReporter {
 
   onRunnerEnd(runnerStats: RunnerStats): void {
     if (this._notifyTestFinishMessage) {
-      if (this._client) {
-        this._slackRequestQueue.push({
-          type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
-          payload: this.createResultPayload(
-            runnerStats,
-            this._stateCounts
-          ) as ChatPostMessageArguments,
-        });
-
-        if (this._notifyDetailResultThread) {
+      try {
+        if (this._client) {
           this._slackRequestQueue.push({
             type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
-            payload: this.createResultDetailPayload(
+            payload: this.createResultPayload(
               runnerStats,
               this._stateCounts
             ) as ChatPostMessageArguments,
-            isDetailResult: true,
+          });
+
+          if (this._notifyDetailResultThread) {
+            this._slackRequestQueue.push({
+              type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
+              payload: this.createResultDetailPayload(
+                runnerStats,
+                this._stateCounts
+              ) as ChatPostMessageArguments,
+              isDetailResult: true,
+            });
+          }
+        } else {
+          this._slackRequestQueue.push({
+            type: SLACK_REQUEST_TYPE.WEBHOOK_SEND,
+            payload: this.createResultPayload(
+              runnerStats,
+              this._stateCounts
+            ) as IncomingWebhookSendArguments,
           });
         }
-      } else {
-        this._slackRequestQueue.push({
-          type: SLACK_REQUEST_TYPE.WEBHOOK_SEND,
-          payload: this.createResultPayload(
-            runnerStats,
-            this._stateCounts
-          ) as IncomingWebhookSendArguments,
-        });
+      } catch (error) {
+        log.error(error);
+        throw error;
       }
     }
 

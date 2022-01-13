@@ -9,7 +9,8 @@
     "declarationMap": true,
     "resolveJsonModule": true,
     "removeComments": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "downlevelIteration": true
   },
   "include": ["src/**/*"],
   "exclude": ["/coverage", "/dist", "/docs", "/node_modules"]
