@@ -672,7 +672,7 @@ class SlackReporter extends WDIOReporter {
           type: 'header',
           text: {
             type: 'plain_text',
-            text: this._title || '',
+            text: 'Result Details',
             emoji: true,
           },
         },
