@@ -1,7 +1,7 @@
 # @moroo/wdio-slack-reporter
 
 Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).<br />
-This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x and above.
+This package is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x and above.
 
 ## Slack notification screenshot
 
@@ -9,7 +9,7 @@ This project is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x
 
 ## WebdriverIO 4.x or lower Compatibility
 
-> This package only supports up to WebdriverIO 6.x. <br />
+> This project is Compatible with WebdriverIO version 6.x and above.<br />
 > If you are using 4.x or lower, use to [wdio-slack-reporter](https://github.com/kmnaid/wdio-slack-reporter).
 
 ## Installation
@@ -19,7 +19,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.21"
+    "@moroo/wdio-slack-reporter": "2.0.22"
   }
 }
 ```
@@ -92,7 +92,7 @@ If both `web-api` and `webhook` are set, `web-api` is used.
 ||notifyTestStartMessage||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to send notifications test start.|
 ||notifyFailedCase||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to attach failed cases in the test results reported to Slack.|
 ||notifyTestFinishMessage||**type**: `boolean`<br />**scope**: `webhook`, `web-api`<br />**default**: `true`<br />Set this option to true to send notifications test finished.|
-||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - :white\*check\*mark:<br />**\*failed\*** - :x:<br />_**skipped**_ - :double\*vertical\*bar:<br />**\*pending\*** - :grey\*question:<br />**\*start**_ - :rocket:<br />_**finished**_ - :checkered_flag:<br />_**watch**\_ - :stopwatch:</Blockquote>This option changes the emoji set by default.|
+||emojiSymbols||**type**: `Object`<br />**scope**: `webhook`, `web-api`<br />**default**: <br /><Blockquote>_**passed**_ - ✅<br />_**failed**_ - ❌<br />_**skipped**_ - ⏸<br />_**pending**_ - ❔<br />_**start**_ - 🚀<br />_**finished**_ - 🏁<br />_**watch**_ - ⏱</Blockquote>This option changes the emoji set by default.|
 ||createStartPayload||**type**: `function`<br />**scope** - `webhook`, `web-api`<br />This option customizes the payload that is notified at the start of the test.|
 ||createFailedTestPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified at the failure of the test.|
 ||createResultPayload||**type**: `function`<br />**scope**: `webhook`, `web-api`<br />This option customizes the payload that is notified of the results of the test.|
@@ -136,21 +136,21 @@ export.config = {
           watch: ':stopwatch:'
         },
         // Override the createStartPayload function.
-        createStartPayload: (runnerStats: RunnerStats): IncomingWebhookSendArguments => {
+        createStartPayload: function (runnerStats: RunnerStats): IncomingWebhookSendArguments {
           const payload: IncomingWebhookSendArguments = {
             // do something...
           }
           return payload;
         },
         // Override the createFailedTestPayload function.
-        createFailedTestPayload: (testStats: TestStats): IncomingWebhookSendArguments => {
+        createFailedTestPayload: function (testStats: TestStats): IncomingWebhookSendArguments {
           const payload: IncomingWebhookSendArguments = {
             // do something...
           }
           return payload;
         },
         // Override the createResultPayload function.
-        createResultPayload: (runnerStats: RunnerStats, stateCounts: StateCount): IncomingWebhookSendArguments => {
+        createResultPayload: function (runnerStats: RunnerStats, stateCounts: StateCount): IncomingWebhookSendArguments {
           const payload: IncomingWebhookSendArguments = {
             // do something...
           }
@@ -185,14 +185,14 @@ export.config = {
           uploadScreenshotOfFailedCase: true,
           notifyDetailResultThread: true,
           // Override the createScreenshotPayload function.
-          createScreenshotPayload: (testStats: TestStats, screenshotBuffer: Buffer): FilesUploadArguments => {
+          createScreenshotPayload: function (testStats: TestStats, screenshotBuffer: Buffer): FilesUploadArguments {
             const payload: FilesUploadArguments = {
               // do something...
             }
             return payload;
           },
           // Override the createResultDetailPayload function.
-          createResultDetailPayload: (runnerStats: RunnerStats, stateCounts: StateCount): ChatPostMessageArguments => {
+          createResultDetailPayload: function (runnerStats: RunnerStats, stateCounts: StateCount): ChatPostMessageArguments {
             const payload: ChatPostMessageArguments = {
               // do something...
             }
@@ -216,21 +216,21 @@ export.config = {
           watch: ':stopwatch:'
         },
         // Override the createStartPayload function.
-        createStartPayload: (runnerStats: RunnerStats): IncomingWebhookSendArguments => {
+        createStartPayload: function (runnerStats: RunnerStats): IncomingWebhookSendArguments {
           const payload: IncomingWebhookSendArguments = {
             // do something...
           }
           return payload;
         },
         // Override the createFailedTestPayload function.
-        createFailedTestPayload: (testStats: TestStats): IncomingWebhookSendArguments => {
+        createFailedTestPayload: function (testStats: TestStats): IncomingWebhookSendArguments {
           const payload: IncomingWebhookSendArguments = {
             // do something...
           }
           return payload;
         },
         // Override the createResultPayload function.
-        createResultPayload: (runnerStats: RunnerStats, stateCounts: StateCount): IncomingWebhookSendArguments => {
+        createResultPayload: function (runnerStats: RunnerStats, stateCounts: StateCount): IncomingWebhookSendArguments {
           const payload: IncomingWebhookSendArguments = {
             // do something...
           }
