@@ -1,5 +1,10 @@
 # @moroo/wdio-slack-reporter
 
+![version](https://img.shields.io/npm/v/@moroo/wdio-slack-reporter?color=%23CB3837&label=latest)
+![downloads](https://img.shields.io/npm/dw/@moroo/wdio-slack-reporter?color=%23CB3837&)
+![license](https://img.shields.io/npm/l/@moroo/wdio-slack-reporter)
+![webdriverio](https://img.shields.io/static/v1?color=EA5906&label=WebdriverIO&message=>=6.0&logo=webdriverio)
+
 Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).<br />
 This package is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x and above.
 
@@ -19,7 +24,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.24"
+    "@moroo/wdio-slack-reporter": "2.0.25"
   }
 }
 ```
@@ -197,7 +202,7 @@ This option changes the emoji set by default.
 
 - Scope: `webhook`, `web-api`
 - Type: `object`
-- Default: `true`
+- Default:
   - passed - ✅ `:white_check_mark:`
   - failed - ❌ `:x:`
   - skipped - ⏸ `:double_vertical_bar:`
