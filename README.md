@@ -172,6 +172,14 @@ Provide a link to the test results. It is a clickable link in the notification.
 - Scope: `webhook`, `web-api`
 - Type: `string`
 
+#### **cucumberTests (`Optional`)**
+
+Set this option to true to parse results of Cucumber feature files.
+
+- Scope: `webhook`, `web-api`
+- Type: `boolean`
+- Default: `false`
+
 #### **notifyTestStartMessage (`Optional`)**
 
 Set this option to true to send notifications test start.

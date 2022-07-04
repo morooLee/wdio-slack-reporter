@@ -61,6 +61,7 @@ export interface SlackReporterOptions extends Reporters.Options {
   slackOptions?: SlackOptions;
   emojiSymbols?: EmojiSymbols;
   title?: string;
+  cucumberTests?: boolean;
   resultsUrl?: string;
   notifyFailedCase?: boolean;
   notifyTestStartMessage?: boolean;
