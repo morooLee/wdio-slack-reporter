@@ -784,12 +784,14 @@ class SlackReporter extends WDIOReporter {
     const suitesData = this.getOrderedSuites();
     const suiteStats = { passed: 0, failed: 0, skipped: 0 };
     for (const suite of suitesData) {
-      if (!suite.tests.some((test) => test.state !== 'passed')) {
-        suiteStats.passed++;
-      } else if (suite.tests.some((test) => test.state === 'failed')) {
-        suiteStats.failed++;
-      } else if (suite.tests.every((test) => test.state === 'skipped')) {
-        suiteStats.skipped++;
+      if (suite.type === 'scenario') {
+        if (!suite.tests.some((test) => test.state !== 'passed')) {
+          suiteStats.passed++;
+        } else if (suite.tests.some((test) => test.state === 'failed')) {
+          suiteStats.failed++;
+        } else if (!suite.tests.some((test) => test.state !== 'skipped')) {
+          suiteStats.skipped++;
+        }
       }
     }
 
