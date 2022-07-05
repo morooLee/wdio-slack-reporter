@@ -789,7 +789,7 @@ class SlackReporter extends WDIOReporter {
           suiteStats.passed++;
         } else if (suite.tests.some((test) => test.state === 'failed')) {
           suiteStats.failed++;
-        } else if (!suite.tests.some((test) => test.state !== 'skipped')) {
+        } else {
           suiteStats.skipped++;
         }
       }
