@@ -136,11 +136,14 @@ Set this option to true to attach a screenshot to the failed case.
 
 #### **notifyDetailResultThread (`Optional`)**
 
-Set this option to true if you want to add thread with details of results to notification of test results posted to Slack.
+Set this option to one of three values (all | passed | failed) if you want to add thread with details of results to notification of test results posted to Slack.
+`passed` option will add information only about passed tests.
+`failed` option will add information only about failed tests.
+`all`    option will add information about all tests. (skipped also)
 
 - Scope: `web-api`
-- Type: `boolean`
-- Default: `true`
+- Type: `all | passed | failed`
+- Default: `undefined`
 
 #### **createScreenshotPayload (`Optional`)**
 
