@@ -27,9 +27,7 @@ export interface StateCount {
 }
 
 export class CucumberStats extends SuiteStats {
-  constructor(suite: Suite, public state: TestStats['state']) {
-    super(suite);
-  }
+  state: TestStats['state'];
 }
 
 export interface EmojiSymbols {

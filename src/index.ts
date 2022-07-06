@@ -720,6 +720,21 @@ class SlackReporter extends WDIOReporter {
         continue;
       }
 
+      let eventsToReport = this.getEventsToReport(suite);
+      // Filter Detailed tests results by state (if needed)
+      if (
+        this._cucumberTests === false &&
+        this._notifyDetailResultThread !== 'all'
+      ) {
+        eventsToReport = eventsToReport.filter(
+          ({ state }) => state === this._notifyDetailResultThread
+        );
+      }
+
+      if (eventsToReport.length === 0) {
+        continue;
+      }
+
       // Get the indent/starting point for this suite
       const suiteIndent = this.indent(suite.uid);
 
@@ -735,14 +750,6 @@ class SlackReporter extends WDIOReporter {
             .trim()
             .split('\n')
             .map((l) => `${suiteIndent}${l.trim()}`)
-        );
-      }
-
-      let eventsToReport = this.getEventsToReport(suite);
-      // Filter Detailed tests results by state (if needed)
-      if (this._notifyDetailResultThread !== 'all') {
-        eventsToReport = eventsToReport.filter(
-          ({ state }) => state === this._notifyDetailResultThread
         );
       }
 
@@ -812,7 +819,9 @@ class SlackReporter extends WDIOReporter {
           } else if (suite.tests.some((test) => test.state === 'failed')) {
             testState = 'failed';
           }
-          this._cucumberOrderedTests.push(new CucumberStats(suite, testState));
+          this._cucumberOrderedTests.push(
+            Object.assign(suite, { state: testState })
+          );
         }
       }
     }
@@ -966,10 +975,10 @@ class SlackReporter extends WDIOReporter {
 
   onRunnerEnd(runnerStats: RunnerStats): void {
     if (this._notifyTestFinishMessage) {
+      const stateCount = this._cucumberTests
+        ? this.getCucumberTestsCounts()
+        : this._stateCounts;
       try {
-        const stateCount = this._cucumberTests
-          ? this.getCucumberTestsCounts()
-          : this._stateCounts;
         if (this._client) {
           this._slackRequestQueue.push({
             type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
