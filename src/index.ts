@@ -37,6 +37,8 @@ import {
   SlackReporterOptions,
   EmojiSymbols,
   StateCount,
+  TestType,
+  CucumberStats,
 } from './types';
 
 const log = getLogger('@moroo/wdio-slack-reporter');
@@ -55,18 +57,20 @@ class SlackReporter extends WDIOReporter {
   private _webhook?: IncomingWebhook;
   private _channel?: string;
   private _symbols: EmojiSymbols;
+  private _cucumberTests: boolean = false;
   private _title?: string;
   private _notifyTestStartMessage: boolean = true;
   private _notifyFailedCase: boolean = true;
   private _uploadScreenshotOfFailedCase: boolean = true;
   private _notifyTestFinishMessage: boolean = true;
-  private _notifyDetailResultThread: boolean = true;
+  private _notifyDetailResultThread: TestType = undefined;
   private _isSynchronizing: boolean = false;
   private _interval: NodeJS.Timeout;
   private _hasRunnerEnd = false;
   private _lastScreenshotBuffer?: Buffer = undefined;
   private _suiteUids = new Set<string>();
   private _orderedSuites: SuiteStats[] = [];
+  private _cucumberOrderedTests: CucumberStats[] = [];
   private _indents: number = 0;
   private _suiteIndents: Record<string, number> = {};
   private _currentSuite?: SuiteStats;
@@ -88,11 +92,6 @@ class SlackReporter extends WDIOReporter {
       });
       this._channel = options.slackOptions.channel;
       if (options.slackOptions.notifyDetailResultThread !== undefined) {
-        if (options.notifyTestFinishMessage === false) {
-          log.warn(
-            'Notify is not possible because the notifyResultMessage option is off.'
-          );
-        }
         this._notifyDetailResultThread =
           options.slackOptions.notifyDetailResultThread;
       }
@@ -139,6 +138,10 @@ class SlackReporter extends WDIOReporter {
 
     if (options.resultsUrl !== undefined) {
       SlackReporter.setResultsUrl(options.resultsUrl);
+    }
+
+    if (options.cucumberTests !== undefined) {
+      this._cucumberTests = options.cucumberTests;
     }
 
     if (options.notifyTestStartMessage !== undefined) {
@@ -694,9 +697,18 @@ class SlackReporter extends WDIOReporter {
 
   private getResultDetailPayloads(): (Block | KnownBlock)[] {
     const output: string[] = [];
-    const suites = this.getOrderedSuites();
+    let suites = this._cucumberTests
+      ? this.getOrderedCucumberTests()
+      : this.getOrderedSuites();
 
     const blocks: (Block | KnownBlock)[] = [];
+
+    // Filter Detailed suites by state (Cucumber only)
+    if (this._cucumberTests && this._notifyDetailResultThread !== 'all') {
+      suites = (suites as CucumberStats[]).filter(
+        ({ state }) => state === this._notifyDetailResultThread
+      );
+    }
 
     for (const suite of suites) {
       // Don't do anything if a suite has no tests or sub suites
@@ -705,6 +717,21 @@ class SlackReporter extends WDIOReporter {
         suite.suites.length === 0 &&
         suite.hooks.length === 0
       ) {
+        continue;
+      }
+
+      let eventsToReport = this.getEventsToReport(suite);
+      // Filter Detailed tests results by state (if needed)
+      if (
+        this._cucumberTests === false &&
+        this._notifyDetailResultThread !== 'all'
+      ) {
+        eventsToReport = eventsToReport.filter(
+          ({ state }) => state === this._notifyDetailResultThread
+        );
+      }
+
+      if (eventsToReport.length === 0) {
         continue;
       }
 
@@ -726,7 +753,6 @@ class SlackReporter extends WDIOReporter {
         );
       }
 
-      const eventsToReport = this.getEventsToReport(suite);
       for (const test of eventsToReport) {
         const testTitle = test.title;
         const testState = test.state;
@@ -773,6 +799,45 @@ class SlackReporter extends WDIOReporter {
     }
 
     return this._orderedSuites;
+  }
+
+  private getOrderedCucumberTests() {
+    if (this._cucumberOrderedTests.length) {
+      return this._cucumberOrderedTests;
+    }
+
+    this._cucumberOrderedTests = [];
+    for (const uid of this._suiteUids) {
+      for (const [suiteUid, suite] of Object.entries(this.suites)) {
+        if (suiteUid !== uid) {
+          continue;
+        }
+        if (suite.type === 'scenario') {
+          let testState: CucumberStats['state'] = 'skipped';
+          if (!suite.tests.some((test) => test.state !== 'passed')) {
+            testState = 'passed';
+          } else if (suite.tests.some((test) => test.state === 'failed')) {
+            testState = 'failed';
+          }
+          this._cucumberOrderedTests.push(
+            Object.assign(suite, { state: testState })
+          );
+        }
+      }
+    }
+
+    return this._cucumberOrderedTests;
+  }
+
+  private getCucumberTestsCounts() {
+    const suitesData = this.getOrderedCucumberTests();
+    const suiteStats: StateCount = {
+      passed: suitesData.filter(({ state }) => state === 'passed').length,
+      failed: suitesData.filter(({ state }) => state === 'failed').length,
+      skipped: suitesData.filter(({ state }) => state === 'skipped').length,
+    };
+
+    return suiteStats;
   }
 
   /**
@@ -825,9 +890,11 @@ class SlackReporter extends WDIOReporter {
     this._currentSuite = suiteStats;
 
     this._suiteUids.add(suiteStats.uid);
-    if (suiteStats.type === 'feature') {
-      this._indents = 0;
-      this._suiteIndents[suiteStats.uid] = this._indents;
+    if (this._cucumberTests) {
+      if (suiteStats.type === 'feature') {
+        this._indents = 0;
+        this._suiteIndents[suiteStats.uid] = this._indents;
+      }
     } else {
       this._suiteIndents[suiteStats.uid] = ++this._indents;
     }
@@ -908,13 +975,16 @@ class SlackReporter extends WDIOReporter {
 
   onRunnerEnd(runnerStats: RunnerStats): void {
     if (this._notifyTestFinishMessage) {
+      const stateCount = this._cucumberTests
+        ? this.getCucumberTestsCounts()
+        : this._stateCounts;
       try {
         if (this._client) {
           this._slackRequestQueue.push({
             type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
             payload: this.createResultPayload(
               runnerStats,
-              this._stateCounts
+              stateCount
             ) as ChatPostMessageArguments,
           });
 
@@ -923,7 +993,7 @@ class SlackReporter extends WDIOReporter {
               type: SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE,
               payload: this.createResultDetailPayload(
                 runnerStats,
-                this._stateCounts
+                stateCount
               ) as ChatPostMessageArguments,
               isDetailResult: true,
             });
@@ -933,7 +1003,7 @@ class SlackReporter extends WDIOReporter {
             type: SLACK_REQUEST_TYPE.WEBHOOK_SEND,
             payload: this.createResultPayload(
               runnerStats,
-              this._stateCounts
+              stateCount
             ) as IncomingWebhookSendArguments,
           });
         }

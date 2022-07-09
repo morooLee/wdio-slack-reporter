@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChatPostMessageArguments, FilesUploadArguments } from '@slack/web-api';
 import { IncomingWebhookSendArguments } from '@slack/webhook';
-import { RunnerStats, TestStats } from '@wdio/reporter';
+import { RunnerStats, SuiteStats, TestStats } from '@wdio/reporter';
+import { Suite } from '@wdio/reporter/build/stats/suite';
 import { Reporters } from '@wdio/types';
 import { SLACK_REQUEST_TYPE } from './constants';
 
@@ -17,10 +18,16 @@ export {
 
 export { RunnerStats, TestStats } from '@wdio/reporter';
 
+export type TestType = 'passed' | 'failed' | 'all';
+
 export interface StateCount {
   passed: number;
   failed: number;
   skipped: number;
+}
+
+export class CucumberStats extends SuiteStats {
+  state: TestStats['state'];
 }
 
 export interface EmojiSymbols {
@@ -38,7 +45,7 @@ export interface SlackWebApiOptions {
   channel: string;
   slackBotToken: string;
   uploadScreenshotOfFailedCase?: boolean;
-  notifyDetailResultThread?: boolean;
+  notifyDetailResultThread?: TestType;
   createScreenshotPayload?: (
     testStats: TestStats,
     screenshotBuffer: Buffer
@@ -61,6 +68,7 @@ export interface SlackReporterOptions extends Reporters.Options {
   slackOptions?: SlackOptions;
   emojiSymbols?: EmojiSymbols;
   title?: string;
+  cucumberTests?: boolean;
   resultsUrl?: string;
   notifyFailedCase?: boolean;
   notifyTestStartMessage?: boolean;

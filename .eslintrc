@@ -15,7 +15,7 @@
     "plugin:prettier/recommended"
   ],
   "rules": {
-    "prettier/prettier": "error",
+    "prettier/prettier": [ "error", { "endOfLine": "auto" }],
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/no-namespace": "off"
