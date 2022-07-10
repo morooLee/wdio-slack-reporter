@@ -18,7 +18,7 @@ export {
 
 export { RunnerStats, TestStats } from '@wdio/reporter';
 
-export type TestType = 'passed' | 'failed' | 'all';
+export type TestResultType = 'passed' | 'failed' | 'pending' | 'skipped';
 
 export interface StateCount {
   passed: number;
@@ -45,7 +45,8 @@ export interface SlackWebApiOptions {
   channel: string;
   slackBotToken: string;
   uploadScreenshotOfFailedCase?: boolean;
-  notifyDetailResultThread?: TestType;
+  notifyDetailResultThread?: boolean;
+  filterForDetailResults?: TestResultType[];
   createScreenshotPayload?: (
     testStats: TestStats,
     screenshotBuffer: Buffer
@@ -68,7 +69,6 @@ export interface SlackReporterOptions extends Reporters.Options {
   slackOptions?: SlackOptions;
   emojiSymbols?: EmojiSymbols;
   title?: string;
-  cucumberTests?: boolean;
   resultsUrl?: string;
   notifyFailedCase?: boolean;
   notifyTestStartMessage?: boolean;

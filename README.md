@@ -24,7 +24,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.1.0"
+    "@moroo/wdio-slack-reporter": "2.1.1"
   }
 }
 ```
@@ -136,14 +136,25 @@ Set this option to true to attach a screenshot to the failed case.
 
 #### **notifyDetailResultThread (`Optional`)**
 
-Set this option to one of three values (all | passed | failed) if you want to add thread with details of results to notification of test results posted to Slack.
-`passed` option will add information only about passed tests.
-`failed` option will add information only about failed tests.
-`all` option will add information about all tests. (skipped also)
+> This option only works when the notifyTestFinishMessage option is true.
+
+Set this option to true if you want to add thread with details of results to notification of test results posted to Slack.
 
 - Scope: `web-api`
-- Type: `all | passed | failed`
-- Default: `undefined`
+- Type: `boolean`
+- Default: `true`
+
+#### **filterForDetailResults (`Optional`)**
+
+> This option only works when the notifyDetailResultThread option is true.
+
+Add the filter you want to this option to the array and the detailed results will be filtered out in Slack and sent to the thread.
+_(If there are no filters (array is empty or undefined, all filters are applied.)_
+**Filter list**: `passed`, `failed`, `pending`, `skipped`
+
+- Scope: `web-api`
+- Type: `array (passed | failed | pending | skipped)`
+- Default: `['passed', 'failed', 'pending', 'skipped']`
 
 #### **createScreenshotPayload (`Optional`)**
 
@@ -174,14 +185,6 @@ Provide a link to the test results. It is a clickable link in the notification.
 
 - Scope: `webhook`, `web-api`
 - Type: `string`
-
-#### **cucumberTests (`Optional`)**
-
-Set this option to true to parse results of Cucumber feature files.
-
-- Scope: `webhook`, `web-api`
-- Type: `boolean`
-- Default: `false`
 
 #### **notifyTestStartMessage (`Optional`)**
 
@@ -328,8 +331,17 @@ export.config = {
           type: 'web-api',
           slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",,
           channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
+          // Set this option to true to attach a screenshot to the failed case.
           uploadScreenshotOfFailedCase: true,
+          // Set this option to true if you want to add thread with details of results to notification of test results posted to Slack.
           notifyDetailResultThread: true,
+          // Set the Filter for detail results. (array is empty or undefined, all filters are applied.)
+          filterForDetailResults: [
+            'passed',
+            'failed',
+            'pending',
+            'skipped'
+          ],
           // Override the createScreenshotPayload function.
           createScreenshotPayload: function (testStats: TestStats, screenshotBuffer: Buffer): FilesUploadArguments {
             const payload: FilesUploadArguments = {

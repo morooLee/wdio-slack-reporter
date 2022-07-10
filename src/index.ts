@@ -37,8 +37,8 @@ import {
   SlackReporterOptions,
   EmojiSymbols,
   StateCount,
-  TestType,
   CucumberStats,
+  TestResultType,
 } from './types';
 
 const log = getLogger('@moroo/wdio-slack-reporter');
@@ -57,13 +57,19 @@ class SlackReporter extends WDIOReporter {
   private _webhook?: IncomingWebhook;
   private _channel?: string;
   private _symbols: EmojiSymbols;
-  private _cucumberTests: boolean = false;
+  private _isCucumberFramework: boolean = false;
   private _title?: string;
   private _notifyTestStartMessage: boolean = true;
   private _notifyFailedCase: boolean = true;
   private _uploadScreenshotOfFailedCase: boolean = true;
   private _notifyTestFinishMessage: boolean = true;
-  private _notifyDetailResultThread: TestType = undefined;
+  private _notifyDetailResultThread: boolean = true;
+  private _filterForDetailResults: TestResultType[] = [
+    'passed',
+    'failed',
+    'pending',
+    'skipped',
+  ];
   private _isSynchronizing: boolean = false;
   private _interval: NodeJS.Timeout;
   private _hasRunnerEnd = false;
@@ -92,8 +98,33 @@ class SlackReporter extends WDIOReporter {
       });
       this._channel = options.slackOptions.channel;
       if (options.slackOptions.notifyDetailResultThread !== undefined) {
+        if (options.notifyTestFinishMessage === false) {
+          log.warn(
+            'Notify is not possible. because the notifyResultMessage option is off.'
+          );
+        }
         this._notifyDetailResultThread =
           options.slackOptions.notifyDetailResultThread;
+      }
+      if (options.slackOptions.filterForDetailResults !== undefined) {
+        if (options.slackOptions.notifyDetailResultThread === false) {
+          log.warn(
+            'Detail result filters does not work. because the notifyDetailResultThread option is off.'
+          );
+        }
+        if (options.slackOptions.filterForDetailResults.length === 0) {
+          log.info(
+            'If there are no filters (array is empty), all filters are applied.'
+          );
+        } else {
+          this._filterForDetailResults = [
+            ...options.slackOptions.filterForDetailResults,
+          ];
+        }
+      }
+      if (options.slackOptions.uploadScreenshotOfFailedCase !== undefined) {
+        this._uploadScreenshotOfFailedCase =
+          options.slackOptions.uploadScreenshotOfFailedCase;
       }
       if (options.slackOptions.uploadScreenshotOfFailedCase !== undefined) {
         this._uploadScreenshotOfFailedCase =
@@ -138,10 +169,6 @@ class SlackReporter extends WDIOReporter {
 
     if (options.resultsUrl !== undefined) {
       SlackReporter.setResultsUrl(options.resultsUrl);
-    }
-
-    if (options.cucumberTests !== undefined) {
-      this._cucumberTests = options.cucumberTests;
     }
 
     if (options.notifyTestStartMessage !== undefined) {
@@ -689,6 +716,17 @@ class SlackReporter extends WDIOReporter {
             }s`,
           },
         },
+        {
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: `*Filter*: ${this._filterForDetailResults
+                .map((filter) => '`' + filter + '`')
+                .join(', ')}`,
+            },
+          ],
+        },
       ],
     };
 
@@ -697,16 +735,16 @@ class SlackReporter extends WDIOReporter {
 
   private getResultDetailPayloads(): (Block | KnownBlock)[] {
     const output: string[] = [];
-    let suites = this._cucumberTests
+    let suites = this._isCucumberFramework
       ? this.getOrderedCucumberTests()
       : this.getOrderedSuites();
 
     const blocks: (Block | KnownBlock)[] = [];
 
     // Filter Detailed suites by state (Cucumber only)
-    if (this._cucumberTests && this._notifyDetailResultThread !== 'all') {
-      suites = (suites as CucumberStats[]).filter(
-        ({ state }) => state === this._notifyDetailResultThread
+    if (this._isCucumberFramework && this._notifyDetailResultThread) {
+      suites = (suites as CucumberStats[]).filter(({ state }) =>
+        this._filterForDetailResults.includes(state)
       );
     }
 
@@ -723,11 +761,11 @@ class SlackReporter extends WDIOReporter {
       let eventsToReport = this.getEventsToReport(suite);
       // Filter Detailed tests results by state (if needed)
       if (
-        this._cucumberTests === false &&
-        this._notifyDetailResultThread !== 'all'
+        this._isCucumberFramework === false &&
+        this._notifyDetailResultThread
       ) {
-        eventsToReport = eventsToReport.filter(
-          ({ state }) => state === this._notifyDetailResultThread
+        eventsToReport = eventsToReport.filter(({ state }) =>
+          this._filterForDetailResults.includes(state)
         );
       }
 
@@ -778,6 +816,16 @@ class SlackReporter extends WDIOReporter {
         output.length = 0;
         blocks.push(block);
       }
+    }
+    if (blocks.length === 0) {
+      const block: Block | KnownBlock = {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '*`No filter Results.`*',
+        },
+      };
+      blocks.push(block);
     }
     return blocks;
   }
@@ -857,6 +905,10 @@ class SlackReporter extends WDIOReporter {
   }
 
   onRunnerStart(runnerStats: RunnerStats): void {
+    log.info('INFO', `Test Framework: ${runnerStats.config.framework}`);
+    if (runnerStats.config.framework === 'cucumber') {
+      this._isCucumberFramework = true;
+    }
     if (this._notifyTestStartMessage) {
       try {
         if (this._client) {
@@ -890,7 +942,7 @@ class SlackReporter extends WDIOReporter {
     this._currentSuite = suiteStats;
 
     this._suiteUids.add(suiteStats.uid);
-    if (this._cucumberTests) {
+    if (this._isCucumberFramework) {
       if (suiteStats.type === 'feature') {
         this._indents = 0;
         this._suiteIndents[suiteStats.uid] = this._indents;
@@ -975,7 +1027,7 @@ class SlackReporter extends WDIOReporter {
 
   onRunnerEnd(runnerStats: RunnerStats): void {
     if (this._notifyTestFinishMessage) {
-      const stateCount = this._cucumberTests
+      const stateCount = this._isCucumberFramework
         ? this.getCucumberTestsCounts()
         : this._stateCounts;
       try {
