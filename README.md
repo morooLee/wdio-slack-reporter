@@ -24,7 +24,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.0.25"
+    "@moroo/wdio-slack-reporter": "2.1.0"
   }
 }
 ```
@@ -139,7 +139,7 @@ Set this option to true to attach a screenshot to the failed case.
 Set this option to one of three values (all | passed | failed) if you want to add thread with details of results to notification of test results posted to Slack.
 `passed` option will add information only about passed tests.
 `failed` option will add information only about failed tests.
-`all`    option will add information about all tests. (skipped also)
+`all` option will add information about all tests. (skipped also)
 
 - Scope: `web-api`
 - Type: `all | passed | failed`
