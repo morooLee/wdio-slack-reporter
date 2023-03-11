@@ -24,7 +24,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "2.1.1"
+    "@moroo/wdio-slack-reporter": "8.0.0"
   }
 }
 ```
@@ -149,7 +149,7 @@ Set this option to true if you want to add thread with details of results to not
 > This option only works when the notifyDetailResultThread option is true.
 
 Add the filter you want to this option to the array and the detailed results will be filtered out in Slack and sent to the thread.
-_(If there are no filters (array is empty or undefined, all filters are applied.)_
+_(If there are no filters (array is empty or undefined), all filters are applied.)_
 **Filter list**: `passed`, `failed`, `pending`, `skipped`
 
 - Scope: `web-api`
@@ -464,7 +464,7 @@ WARN @moroo/slack-wdio-reporter: Not using web-api or disabled notifyFailedCase 
 // wdio.conf.js
 export.config = {
   afterTest: async function (test, context, result) {
-    if (result.error) {
+    if (error) {
       const result = await browser.takeScreenshot();
       SlackReporter.uploadFailedTestScreenshot(result);
     }
@@ -567,7 +567,7 @@ If you want to add a screenshot as a thread to the failed test notification, add
 // wdio.conf.js
 export.config = {
   afterTest: async function (test, context, result) {
-    if (result.error) {
+    if (error) {
       const result = await browser.takeScreenshot();
       SlackReporter.uploadFailedTestScreenshot(result);
     }

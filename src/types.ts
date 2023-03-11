@@ -4,7 +4,7 @@ import { IncomingWebhookSendArguments } from '@slack/webhook';
 import { RunnerStats, SuiteStats, TestStats } from '@wdio/reporter';
 import { Suite } from '@wdio/reporter/build/stats/suite';
 import { Reporters } from '@wdio/types';
-import { SLACK_REQUEST_TYPE } from './constants';
+import { SLACK_REQUEST_TYPE } from './constants.js';
 
 export {
   ChatPostMessageArguments,

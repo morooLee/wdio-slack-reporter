@@ -31,7 +31,7 @@ import {
   EVENTS,
   SLACK_REQUEST_TYPE,
   FINISHED_COLOR,
-} from './constants';
+} from './constants.js';
 import {
   SlackRequestType,
   SlackReporterOptions,
@@ -39,7 +39,7 @@ import {
   StateCount,
   CucumberStats,
   TestResultType,
-} from './types';
+} from './types.js';
 
 const log = getLogger('@moroo/wdio-slack-reporter');
 
@@ -862,7 +862,7 @@ class SlackReporter extends WDIOReporter {
         }
         if (suite.type === 'scenario') {
           let testState: CucumberStats['state'] = 'skipped';
-          if (!suite.tests.some((test) => test.state !== 'passed')) {
+          if (suite.tests.some((test) => test.state === 'passed')) {
             testState = 'passed';
           } else if (suite.tests.some((test) => test.state === 'failed')) {
             testState = 'failed';
@@ -1071,7 +1071,7 @@ class SlackReporter extends WDIOReporter {
 
 export default SlackReporter;
 export { SlackReporterOptions };
-export * from './types';
+export * from './types.js';
 
 declare global {
   namespace WebdriverIO {
