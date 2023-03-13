@@ -7,8 +7,9 @@
   },
   "homepage": "https://github.com/morooLee/wdio-slack-reporter",
   "license": "MIT",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "type": "module",
+  "main": "build/index.js",
   "module": "build/index.js",
   "types": "build/index.d.ts",
   "keywords": [
