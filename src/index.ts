@@ -1027,9 +1027,12 @@ class SlackReporter extends WDIOReporter {
 
   onRunnerEnd(runnerStats: RunnerStats): void {
     if (this._notifyTestFinishMessage) {
-      const stateCount = this._isCucumberFramework
-        ? this.getCucumberTestsCounts()
-        : this._stateCounts;
+      // Cucumber scenario stats count
+      // const stateCount = this._isCucumberFramework
+      //   ? this.getCucumberTestsCounts()
+      //   : this._stateCounts;
+      const stateCount = this._stateCounts;
+
       try {
         if (this._client) {
           this._slackRequestQueue.push({
