@@ -73,6 +73,7 @@ export interface SlackReporterOptions extends Reporters.Options {
   notifyFailedCase?: boolean;
   notifyTestStartMessage?: boolean;
   notifyTestFinishMessage?: boolean;
+  useScenarioBasedStateCounts?: boolean;
   createStartPayload?: (
     runnerStats: RunnerStats
   ) => ChatPostMessageArguments | IncomingWebhookSendArguments;

@@ -24,7 +24,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "8.0.3"
+    "@moroo/wdio-slack-reporter": "8.1.0"
   }
 }
 ```
@@ -210,6 +210,14 @@ Set this option to true to send notifications test finished.
 - Type: `boolean`
 - Default: `true`
 
+#### **useScenarioBasedStateCounts (`Optional`) - Only Cucumber**
+
+Set this option to true to change the state count from test (steps) based to scenario-based. (Only Cucumber)
+
+- Scope: `webhook`, `web-api`
+- Type: `boolean`
+- Default: `false`
+
 #### **emojiSymbols (`Optional`)**
 
 This option changes the emoji set by default.
@@ -274,6 +282,8 @@ export.config = {
         resultsUrl: process.env.JENKINS_URL,
         // Set the notification of Test Finished
         notifyTestFinishMessage: true,
+        // Set the scenario-based state count (Only Cucumber)
+        useScenarioBasedStateCounts: true,
         // Customize Slack Emoji Symbols.
         emojiSymbols: {
           passed: ':white_check_mark:',
@@ -363,6 +373,8 @@ export.config = {
         resultsUrl: process.env.JENKINS_URL,
         // Set the notification of Test Finished
         notifyTestFinishMessage: true,
+        // Set the scenario-based state count (Only Cucumber)
+        useScenarioBasedStateCounts: true,
         // Customize Slack Emoji Symbols.
         emojiSymbols: {
           passed: ':white_check_mark:',

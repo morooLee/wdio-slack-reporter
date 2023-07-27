@@ -53,6 +53,7 @@ class SlackReporter extends WDIOReporter {
     failed: 0,
     skipped: 0,
   };
+  private _useScenarioBasedStateCounts = false;
   private _client?: WebClient;
   private _webhook?: IncomingWebhook;
   private _channel?: string;
@@ -181,6 +182,10 @@ class SlackReporter extends WDIOReporter {
 
     if (options.notifyTestFinishMessage !== undefined) {
       this._notifyTestFinishMessage = options.notifyTestFinishMessage;
+    }
+
+    if (options.useScenarioBasedStateCounts !== undefined) {
+      this._useScenarioBasedStateCounts = options.useScenarioBasedStateCounts;
     }
 
     this._interval = global.setInterval(this.sync.bind(this), 100);
@@ -861,11 +866,11 @@ class SlackReporter extends WDIOReporter {
           continue;
         }
         if (suite.type === 'scenario') {
-          let testState: CucumberStats['state'] = 'skipped';
-          if (suite.tests.some((test) => test.state === 'passed')) {
-            testState = 'passed';
-          } else if (suite.tests.some((test) => test.state === 'failed')) {
+          let testState: CucumberStats['state'] = 'passed';
+          if (suite.tests.some((test) => test.state === 'failed')) {
             testState = 'failed';
+          } else if (suite.tests.every((test) => test.state === 'skipped')) {
+            testState = 'skipped';
           }
           this._cucumberOrderedTests.push(
             Object.assign(suite, { state: testState })
@@ -878,14 +883,21 @@ class SlackReporter extends WDIOReporter {
   }
 
   private getCucumberTestsCounts() {
-    const suitesData = this.getOrderedCucumberTests();
-    const suiteStats: StateCount = {
-      passed: suitesData.filter(({ state }) => state === 'passed').length,
-      failed: suitesData.filter(({ state }) => state === 'failed').length,
-      skipped: suitesData.filter(({ state }) => state === 'skipped').length,
-    };
+    if (this._isCucumberFramework) {
+      const suitesData = this.getOrderedCucumberTests();
+      const suiteStats: StateCount = {
+        passed: suitesData.filter(({ state }) => state === 'passed').length,
+        failed: suitesData.filter(({ state }) => state === 'failed').length,
+        skipped: suitesData.filter(({ state }) => state === 'skipped').length,
+      };
 
-    return suiteStats;
+      return suiteStats;
+    } else {
+      log.warn(
+        'Since the Cucumber Framework is not being used, the state is counted based on the tests(steps).'
+      );
+      return this._stateCounts;
+    }
   }
 
   /**
@@ -1027,11 +1039,10 @@ class SlackReporter extends WDIOReporter {
 
   onRunnerEnd(runnerStats: RunnerStats): void {
     if (this._notifyTestFinishMessage) {
-      // Cucumber scenario stats count
-      // const stateCount = this._isCucumberFramework
-      //   ? this.getCucumberTestsCounts()
-      //   : this._stateCounts;
-      const stateCount = this._stateCounts;
+      log.error(this._useScenarioBasedStateCounts);
+      const stateCount = this._useScenarioBasedStateCounts
+        ? this.getCucumberTestsCounts()
+        : this._stateCounts;
 
       try {
         if (this._client) {
