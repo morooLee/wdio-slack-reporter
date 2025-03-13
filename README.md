@@ -8,6 +8,10 @@
 Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).<br />
 This package is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x and above.
 
+## 📢 Important Notice
+
+### Migration to [filesUploadV2](https://tools.slack.dev/node-slack-sdk/web-api/#upload-a-file) due to [files.upload deprecation](https://api.slack.com/changelog/2024-04-a-better-way-to-upload-files-is-here-to-stay)
+
 ## Slack notification screenshot
 
 <img src="https://raw.githubusercontent.com/morooLee/wdio-slack-reporter/master/docs/Notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
@@ -515,7 +519,7 @@ describe('Post Function Test', function () {
 
 ### upload
 
-> **type**: `(payload: FilesUploadArguments) => Promise<WebAPICallResult>`
+> **type**: `({ payload: FilesUploadArguments; options: FilesUploadV2Options }) => Promise<WebAPICallResult & {files: FilesCompleteUploadExternalResponse[];}>`
 
 Upload a file to Slack.<br />
 _**(If you are using a webhook this will throw an error.)**_
@@ -537,7 +541,15 @@ describe('Upload Function Test', function () {
     const payload: FilesUploadArguments = {
       // do something...
     };
-    const result: WebAPICallResult = await SlackReporter.upload(payload);
+    const options: FilesUploadV2Options = {
+      waitForUpload: true,
+      retry: 3,
+      interval: 1000,
+    };
+    const result: WebAPICallResult = await SlackReporter.upload({
+      payload,
+      options,
+    });
   });
 });
 ```

@@ -1,17 +1,26 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "target": "ES6",
-    "baseUrl": ".",
-    "outDir": "./build",
+    "module": "NodeNext",
+    "target": "ESNext",
+    "moduleResolution": "NodeNext",
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "outDir": "./dist",
     "rootDir": "./src",
+
+    "allowJs": true,
     "declaration": true,
     "declarationMap": true,
     "resolveJsonModule": true,
     "removeComments": false,
-    "esModuleInterop": true
+    "strictFunctionTypes": true,
+    "experimentalDecorators": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["/coverage", "/dist", "/docs", "/node_modules"]
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["dist", "docs", "node_modules"]
 }

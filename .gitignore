@@ -1,7 +1,7 @@
 tests
 **/.DS_Store
 # Typescript build
-build
+dist
 
 # Logs
 logs

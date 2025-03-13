@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) moroo.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 export const SLACK_NAME = 'WebdriverIO Reporter';
 export const SLACK_ICON_URL = 'https://webdriver.io/img/webdriverio.png';
 export const SUCCESS_COLOR = '#36a64f';
@@ -10,7 +16,7 @@ export const EMOJI_SYMBOLS = {
   SKIPPED: ':double_vertical_bar:',
   PENDING: ':grey_question:',
   FAILED: ':x:',
-  ROKET: ':rocket:',
+  ROCKET: ':rocket:',
   CHECKERED_FLAG: ':checkered_flag:',
   STOPWATCH: ':stopwatch:',
 } as const;
