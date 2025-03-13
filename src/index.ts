@@ -1,25 +1,16 @@
-import {
-  Block,
-  ChatPostMessageArguments,
-  FilesUploadArguments,
-  KnownBlock,
-  WebAPICallResult,
-  WebClient,
-} from '@slack/web-api';
-import {
-  IncomingWebhook,
-  IncomingWebhookResult,
-  IncomingWebhookSendArguments,
-} from '@slack/webhook';
-import getLogger from '@wdio/logger';
-import WDIOReporter, {
-  HookStats,
-  RunnerStats,
-  SuiteStats,
-  TestStats,
-} from '@wdio/reporter';
-import { Capabilities } from '@wdio/types';
+/**
+ * Copyright (c) moroo.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 import util from 'util';
+
+import { WebClient } from '@slack/web-api';
+import { IncomingWebhook } from '@slack/webhook';
+import getLogger from '@wdio/logger';
+import WDIOReporter from '@wdio/reporter';
+
 import {
   DEFAULT_COLOR,
   DEFAULT_INDENT,
@@ -32,21 +23,44 @@ import {
   SLACK_REQUEST_TYPE,
   FINISHED_COLOR,
 } from './constants.js';
-import {
+import { SlackReporterOptions } from './types.js';
+
+import type {
   SlackRequestType,
-  SlackReporterOptions,
   EmojiSymbols,
   StateCount,
   CucumberStats,
   TestResultType,
+  FilesUploadV2Options,
 } from './types.js';
+import type {
+  Block,
+  ChatPostMessageArguments,
+  ChatPostMessageResponse,
+  FilesCompleteUploadExternalResponse,
+  FilesInfoResponse,
+  FilesUploadArguments,
+  KnownBlock,
+  WebAPICallResult,
+} from '@slack/web-api';
+import type {
+  IncomingWebhookResult,
+  IncomingWebhookSendArguments,
+} from '@slack/webhook';
+import type {
+  HookStats,
+  RunnerStats,
+  SuiteStats,
+  TestStats,
+} from '@wdio/reporter';
+import type { Capabilities } from '@wdio/types';
 
 const log = getLogger('@moroo/wdio-slack-reporter');
 
 class SlackReporter extends WDIOReporter {
   private static resultsUrl?: string;
   private _slackRequestQueue: SlackRequestType[] = [];
-  private _lastSlackWebAPICallResult?: WebAPICallResult;
+  private _thread?: string;
   private _pendingSlackRequestCount = 0;
   private _stateCounts: StateCount = {
     passed: 0,
@@ -162,7 +176,7 @@ class SlackReporter extends WDIOReporter {
       skipped: options.emojiSymbols?.skipped || EMOJI_SYMBOLS.SKIPPED,
       failed: options.emojiSymbols?.failed || EMOJI_SYMBOLS.FAILED,
       pending: options.emojiSymbols?.pending || EMOJI_SYMBOLS.PENDING,
-      start: options.emojiSymbols?.start || EMOJI_SYMBOLS.ROKET,
+      start: options.emojiSymbols?.start || EMOJI_SYMBOLS.ROCKET,
       finished: options.emojiSymbols?.finished || EMOJI_SYMBOLS.CHECKERED_FLAG,
       watch: options.emojiSymbols?.watch || EMOJI_SYMBOLS.STOPWATCH,
     };
@@ -219,12 +233,19 @@ class SlackReporter extends WDIOReporter {
     SlackReporter.resultsUrl = url;
   }
   /**
-   * Upload failed test scrteenshot
+   * Upload failed test screenshot
    * @param  {WebdriverIO.Browser} browser Parameters used by WebdriverIO.Browser
    * @param  {{page: Page, options: ScreenshotOptions}} puppeteer Parameters used by Puppeteer
    * @return {Promise<Buffer>}
    */
-  static uploadFailedTestScreenshot(data: string | Buffer): void {
+  static uploadFailedTestScreenshot(
+    data: string | Buffer,
+    options: FilesUploadV2Options = {
+      waitForUpload: true,
+      retry: 30,
+      interval: 1000,
+    }
+  ): void {
     let buffer: Buffer;
 
     if (typeof data === 'string') {
@@ -232,7 +253,10 @@ class SlackReporter extends WDIOReporter {
     } else {
       buffer = data;
     }
-    process.emit(EVENTS.SCREENSHOT, buffer);
+    process.emit(EVENTS.SCREENSHOT, {
+      buffer,
+      options,
+    });
   }
   /**
    * Post message from Slack web-api
@@ -258,13 +282,26 @@ class SlackReporter extends WDIOReporter {
    * @return {WebAPICallResult}
    */
   static async upload(
-    payload: FilesUploadArguments
-  ): Promise<WebAPICallResult> {
+    payload: FilesUploadArguments,
+    options: FilesUploadV2Options = {
+      waitForUpload: true,
+      retry: 30,
+      interval: 1000,
+    }
+  ): Promise<
+    WebAPICallResult & {
+      files: FilesCompleteUploadExternalResponse[];
+    }
+  > {
     return new Promise((resolve, reject) => {
-      process.emit(EVENTS.UPLOAD, payload);
+      void process.emit(EVENTS.UPLOAD, { payload, options });
       process.once(EVENTS.RESULT, ({ result, error }) => {
         if (result) {
-          resolve(result as WebAPICallResult);
+          resolve(
+            result as WebAPICallResult & {
+              files: FilesCompleteUploadExternalResponse[];
+            }
+          );
         }
         reject(error);
       });
@@ -342,13 +379,50 @@ class SlackReporter extends WDIOReporter {
   }
 
   private async upload(
-    payload: FilesUploadArguments
-  ): Promise<WebAPICallResult> {
+    payload: FilesUploadArguments,
+    options: FilesUploadV2Options = {
+      waitForUpload: true,
+      retry: 30,
+      interval: 1000,
+    }
+  ): Promise<
+    WebAPICallResult & {
+      files: FilesCompleteUploadExternalResponse[];
+    }
+  > {
     if (this._client) {
       try {
         log.debug('COMMAND', `upload(${payload})`);
         this._pendingSlackRequestCount++;
-        const result = await this._client.files.upload(payload);
+
+        const result = await this._client.filesUploadV2(payload);
+
+        if (options.waitForUpload) {
+          // 응답 객체에서 파일 정보를 평탄화하여 배열로 추출
+          const files =
+            result.files?.flatMap(
+              (file: FilesCompleteUploadExternalResponse) => file.files
+            ) ?? [];
+
+          // 각 파일에 대해 업로드 완료까지 대기
+          for await (const file of files) {
+            if (file?.id) {
+              try {
+                await this.waitForUpload(
+                  file.id,
+                  options?.retry,
+                  options?.interval
+                );
+              } catch (error) {
+                // 에러 발생 시, 에러 상세 정보를 콘솔에 출력
+                log.error(error);
+              }
+            }
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, options.interval));
+        }
+
         log.debug('RESULT', util.inspect(result));
         process.emit(EVENTS.RESULT, { result, error: undefined });
         return result;
@@ -363,6 +437,35 @@ class SlackReporter extends WDIOReporter {
 
     log.error(ERROR_MESSAGES.NOT_USING_WEB_API);
     throw new Error(ERROR_MESSAGES.NOT_USING_WEB_API);
+  }
+
+  private async waitForUpload(
+    fileId: string,
+    retry: number = 30,
+    interval: number = 1000
+  ): Promise<FilesInfoResponse> {
+    if (!this._client) {
+      throw new Error(ERROR_MESSAGES.NOT_USING_WEB_API);
+    }
+
+    let count: number = 0;
+    let response: FilesInfoResponse | undefined = undefined;
+
+    while (!response?.file?.mimetype && count <= retry) {
+      count++;
+
+      await new Promise((resolve) => setTimeout(resolve, interval));
+
+      response = await this._client.files.info({ file: fileId });
+    }
+
+    if (!response) {
+      throw new Error('Failed to get file information');
+    }
+
+    log.debug(`Waiting time for upload to complete: ${count}sec`);
+
+    return response;
   }
 
   private async send(
@@ -390,9 +493,7 @@ class SlackReporter extends WDIOReporter {
   }
 
   get isSynchronised(): boolean {
-    return (
-      this._pendingSlackRequestCount === 0 && this._isSynchronizing === false
-    );
+    return this._pendingSlackRequestCount === 0 && !this._isSynchronizing;
   }
 
   private async sync(): Promise<void> {
@@ -413,20 +514,25 @@ class SlackReporter extends WDIOReporter {
 
     try {
       this._isSynchronizing = true;
-      log.info('Start Synchronising...');
+      log.info('Start Synchronisation');
       await this.next();
     } catch (error) {
       log.error(error);
       throw error;
     } finally {
       this._isSynchronizing = false;
-      log.info('End Synchronising!!!');
+      log.info('End Synchronisation');
     }
   }
 
-  private async next() {
+  private async next(): Promise<void> {
     const request = this._slackRequestQueue.shift();
-    let result: WebAPICallResult | IncomingWebhookResult;
+    let result:
+      | ChatPostMessageResponse
+      | IncomingWebhookResult
+      | (WebAPICallResult & {
+          files: FilesCompleteUploadExternalResponse[];
+        });
 
     log.info('POST', `Slack Request ${request?.type}`);
     log.debug('DATA', util.inspect(request?.payload));
@@ -437,22 +543,31 @@ class SlackReporter extends WDIOReporter {
         switch (request.type) {
           case SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE: {
             if (this._client) {
+              const payload: ChatPostMessageArguments =
+                request.payload as ChatPostMessageArguments;
+
+              if (this._thread) {
+                payload.thread_ts = this._thread;
+              }
+
               result = await this._client.chat.postMessage({
-                ...request.payload,
-                thread_ts: request.isDetailResult
-                  ? (this._lastSlackWebAPICallResult?.ts as string)
-                  : undefined,
+                ...payload,
               });
-              this._lastSlackWebAPICallResult = result;
+              this._thread = result.ts;
               log.debug('RESULT', util.inspect(result));
             }
             break;
           }
           case SLACK_REQUEST_TYPE.WEB_API_UPLOAD: {
             if (this._client) {
-              result = await this._client.files.upload({
-                ...request.payload,
-                thread_ts: this._lastSlackWebAPICallResult?.ts as string,
+              const payload: FilesUploadArguments = request.payload;
+
+              if (this._thread) {
+                payload.thread_ts = this._thread;
+              }
+
+              result = await this._client.filesUploadV2({
+                ...payload,
               });
               log.debug('RESULT', util.inspect(result));
             }
@@ -480,12 +595,11 @@ class SlackReporter extends WDIOReporter {
 
   private convertErrorStack(stack: string): string {
     return stack.replace(
-      // eslint-disable-next-line no-control-regex
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
       ''
     );
   }
-  private getEnviromentCombo(
+  private getEnvironmentCombo(
     capability: Capabilities.RemoteCapability,
     isMultiremote = false
   ): string {
@@ -578,7 +692,7 @@ class SlackReporter extends WDIOReporter {
   ): ChatPostMessageArguments | IncomingWebhookSendArguments {
     const text = `${
       this._title ? '*Title*: `' + this._title + '`\n' : ''
-    }${this.getEnviromentCombo(
+    }${this.getEnvironmentCombo(
       runnerStats.capabilities,
       runnerStats.isMultiremote
     )}`;
@@ -661,7 +775,7 @@ class SlackReporter extends WDIOReporter {
     runnerStats: RunnerStats,
     stateCounts: StateCount
   ): ChatPostMessageArguments | IncomingWebhookSendArguments {
-    const resltsUrl = SlackReporter.getResultsUrl();
+    const resultsUrl = SlackReporter.getResultsUrl();
     const counts = this.getCounts(stateCounts);
     const payload: ChatPostMessageArguments | IncomingWebhookSendArguments = {
       channel: this._channel,
@@ -684,7 +798,7 @@ class SlackReporter extends WDIOReporter {
         {
           color: FINISHED_COLOR,
           text: `${this._title ? `*Title*: \`${this._title}\`\n` : ''}${
-            resltsUrl ? `*Results*: <${resltsUrl}>\n` : ''
+            resultsUrl ? `*Results*: <${resultsUrl}>\n` : ''
           }${counts}`,
           ts: Date.now().toString(),
         },
@@ -765,12 +879,9 @@ class SlackReporter extends WDIOReporter {
 
       let eventsToReport = this.getEventsToReport(suite);
       // Filter Detailed tests results by state (if needed)
-      if (
-        this._isCucumberFramework === false &&
-        this._notifyDetailResultThread
-      ) {
-        eventsToReport = eventsToReport.filter(({ state }) =>
-          this._filterForDetailResults.includes(state)
+      if (!this._isCucumberFramework && this._notifyDetailResultThread) {
+        eventsToReport = eventsToReport.filter(
+          ({ state }) => state && this._filterForDetailResults.includes(state)
         );
       }
 
@@ -835,7 +946,7 @@ class SlackReporter extends WDIOReporter {
     return blocks;
   }
 
-  private getOrderedSuites() {
+  private getOrderedSuites(): SuiteStats[] {
     if (this._orderedSuites.length) {
       return this._orderedSuites;
     }
@@ -854,7 +965,7 @@ class SlackReporter extends WDIOReporter {
     return this._orderedSuites;
   }
 
-  private getOrderedCucumberTests() {
+  private getOrderedCucumberTests(): CucumberStats[] {
     if (this._cucumberOrderedTests.length) {
       return this._cucumberOrderedTests;
     }
@@ -882,7 +993,7 @@ class SlackReporter extends WDIOReporter {
     return this._cucumberOrderedTests;
   }
 
-  private getCucumberTestsCounts() {
+  private getCucumberTestsCounts(): StateCount {
     if (this._isCucumberFramework) {
       const suitesData = this.getOrderedCucumberTests();
       const suiteStats: StateCount = {
@@ -905,7 +1016,7 @@ class SlackReporter extends WDIOReporter {
    * @param  {Object}    suite  test suite containing tests and hooks
    * @return {Object[]}         list of events to report
    */
-  private getEventsToReport(suite: SuiteStats) {
+  private getEventsToReport(suite: SuiteStats): (TestStats | HookStats)[] {
     return [
       /**
        * report all tests and only hooks that failed
@@ -1086,62 +1197,3 @@ class SlackReporter extends WDIOReporter {
 export default SlackReporter;
 export { SlackReporterOptions };
 export * from './types.js';
-
-declare global {
-  namespace WebdriverIO {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface ReporterOption extends SlackReporterOptions {}
-  }
-  namespace NodeJS {
-    interface Process {
-      emit(
-        event: typeof EVENTS.POST_MESSAGE,
-        payload: ChatPostMessageArguments
-      ): boolean;
-      emit(
-        event: typeof EVENTS.UPLOAD,
-        payload: FilesUploadArguments
-      ): Promise<WebAPICallResult>;
-      emit(
-        event: typeof EVENTS.SEND,
-        payload: IncomingWebhookSendArguments
-      ): boolean;
-      emit(event: typeof EVENTS.SCREENSHOT, buffer: Buffer): boolean;
-      emit(
-        event: typeof EVENTS.RESULT,
-        args: {
-          result: WebAPICallResult | IncomingWebhookResult | undefined;
-          error: any;
-        }
-      ): boolean;
-
-      on(
-        event: typeof EVENTS.POST_MESSAGE,
-        listener: (
-          payload: ChatPostMessageArguments
-        ) => Promise<WebAPICallResult>
-      ): this;
-      on(
-        event: typeof EVENTS.UPLOAD,
-        listener: (payload: FilesUploadArguments) => Promise<WebAPICallResult>
-      ): this;
-      on(
-        event: typeof EVENTS.SEND,
-        listener: (
-          payload: IncomingWebhookSendArguments
-        ) => Promise<IncomingWebhookResult>
-      ): this;
-      on(
-        event: typeof EVENTS.SCREENSHOT,
-        listener: (buffer: Buffer) => void
-      ): this;
-      once(
-        event: typeof EVENTS.RESULT,
-        listener: (args: {
-          result: WebAPICallResult | IncomingWebhookResult | undefined;
-          error: any;
-        }) => Promise<void>
-      ): this;
-    }
-  }
-}
