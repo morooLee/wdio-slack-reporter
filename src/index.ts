@@ -23,9 +23,9 @@ import {
   SLACK_REQUEST_TYPE,
   FINISHED_COLOR,
 } from './constants.js';
-import { SlackReporterOptions } from './types.js';
 
 import type {
+  SlackReporterOptions,
   SlackRequestType,
   EmojiSymbols,
   StateCount,
@@ -1195,5 +1195,3 @@ class SlackReporter extends WDIOReporter {
 }
 
 export default SlackReporter;
-export { SlackReporterOptions };
-export * from './types.js';

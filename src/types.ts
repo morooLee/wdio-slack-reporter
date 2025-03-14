@@ -21,23 +21,6 @@ import type {
 import type { RunnerStats, TestStats } from '@wdio/reporter';
 import type { Reporters } from '@wdio/types';
 
-export {
-  Block,
-  ChatPostMessageArguments,
-  ChatPostMessageResponse,
-  FilesCompleteUploadExternalResponse,
-  FilesInfoResponse,
-  FilesUploadArguments,
-  KnownBlock,
-  WebAPICallResult,
-} from '@slack/web-api';
-export {
-  IncomingWebhookResult,
-  IncomingWebhookSendArguments,
-} from '@slack/webhook';
-
-export { HookStats, RunnerStats, SuiteStats, TestStats } from '@wdio/reporter';
-
 export type TestResultType = 'passed' | 'failed' | 'pending' | 'skipped';
 
 export interface StateCount {
@@ -173,8 +156,8 @@ declare global {
             | WebAPICallResult
             | IncomingWebhookResult
             | (WebAPICallResult & {
-              files: FilesCompleteUploadExternalResponse[];
-            })
+                files: FilesCompleteUploadExternalResponse[];
+              })
             | undefined;
           error: any;
         }
@@ -217,8 +200,8 @@ declare global {
             | WebAPICallResult
             | IncomingWebhookResult
             | (WebAPICallResult & {
-              files: FilesCompleteUploadExternalResponse[];
-            })
+                files: FilesCompleteUploadExternalResponse[];
+              })
             | undefined;
           error: any;
         }) => Promise<void>
