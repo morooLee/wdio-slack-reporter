@@ -54,7 +54,7 @@ import type {
   SuiteStats,
   TestStats,
 } from '@wdio/reporter';
-import type { Reporters } from '@wdio/types';
+import type { Capabilities, Reporters } from '@wdio/types';
 
 const log = getLogger('@moroo/wdio-slack-reporter');
 
@@ -630,14 +630,12 @@ class SlackReporter extends WDIOReporter {
    * @return {String}          Enviroment string
    */
   private getEnvironmentCombo(
-    capability: any, // Capabilities.ResolvedTestrunnerCapabilities,
+    capability: Capabilities.ResolvedTestrunnerCapabilities,
     verbose: boolean = true,
     isMultiremote = false
   ): string {
     if (isMultiremote) {
-      const browserNames = Object.values(capability).map(
-        (c: any) => c.browserName
-      );
+      const browserNames = Object.values(capability).map((c) => c.browserName);
       const browserName =
         browserNames.length > 1
           ? `${browserNames.slice(0, -1).join(', ')} and ${browserNames.pop()}`
@@ -647,6 +645,7 @@ class SlackReporter extends WDIOReporter {
     const caps =
       'alwaysMatch' in capability ? capability.alwaysMatch : capability;
     const device = caps['appium:deviceName'];
+    // @ts-expect-error outdated JSONWP capabilities
     const app = (caps['appium:app'] || caps.app || '').replace(
       'sauce-storage:',
       ''
@@ -656,6 +655,7 @@ class SlackReporter extends WDIOReporter {
       caps['appium:appPackage'] ||
       caps['appium:appActivity'] ||
       (path.isAbsolute(app) ? path.basename(app) : app);
+    // @ts-expect-error outdated JSONWP capabilities
     const browser = caps.browserName || caps.browser || appName;
     /**
      * fallback to different capability types:
@@ -666,10 +666,11 @@ class SlackReporter extends WDIOReporter {
      */
     const version =
       caps.browserVersion ||
+      // @ts-expect-error outdated JSONWP capabilities
       caps.version ||
       caps['appium:platformVersion'] ||
+      // @ts-expect-error outdated JSONWP capabilities
       caps.browser_version;
-
     /**
      * fallback to different capability types:
      * platformName: W3C format
@@ -679,9 +680,12 @@ class SlackReporter extends WDIOReporter {
     const platform =
       caps.platformName ||
       caps['appium:platformName'] ||
+      // @ts-expect-error outdated JSONWP capabilities
       caps.platform ||
+      // @ts-expect-error outdated JSONWP capabilities
       (caps.os
-        ? caps.os + (caps.os_version ? ` ${caps.os_version}` : '')
+        ? // @ts-expect-error outdated JSONWP capabilities
+          caps.os + (caps.os_version ? ` ${caps.os_version}` : '')
         : '(unknown)');
 
     // Mobile capabilities
