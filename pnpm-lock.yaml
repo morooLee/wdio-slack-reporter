@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@slack/logger':
+        specifier: ^4.0.0
+        version: 4.0.0
       '@slack/types':
         specifier: ^2.14.0
         version: 2.14.0

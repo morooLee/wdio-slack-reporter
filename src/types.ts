@@ -5,207 +5,180 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { SuiteStats } from '@wdio/reporter';
-
-import type { SLACK_REQUEST_TYPE, EVENTS } from './constants.js';
+import type { EVENTS, SLACK_REQUEST_TYPES } from './constants.js';
 import type {
   ChatPostMessageArguments,
+  ChatPostMessageResponse,
   FilesCompleteUploadExternalResponse,
-  FilesUploadArguments,
+  FilesUploadV2Arguments,
   WebAPICallResult,
+  WebClientOptions,
 } from '@slack/web-api';
 import type {
+  IncomingWebhookDefaultArguments,
   IncomingWebhookResult,
   IncomingWebhookSendArguments,
 } from '@slack/webhook';
 import type { RunnerStats, TestStats } from '@wdio/reporter';
 import type { Reporters } from '@wdio/types';
 
-export type TestResultType = 'passed' | 'failed' | 'pending' | 'skipped';
+// 내부 모듈에서 사용하는 타입들을 import (순환 참조 방지를 위해 type 사용)
 
-export interface StateCount {
-  passed: number;
-  failed: number;
-  skipped: number;
+// ============================
+// 1. 기본 타입 정의
+// ============================
+
+export type EventType = (typeof EVENTS)[keyof typeof EVENTS];
+export type SlackRequestType =
+  (typeof SLACK_REQUEST_TYPES)[keyof typeof SLACK_REQUEST_TYPES];
+
+export class TimeoutError extends Error {
+  public code: string;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'TimeoutError';
+    this.code = 'ETIMEDOUT';
+  }
 }
 
-export class CucumberStats extends SuiteStats {
-  state: TestStats['state'] = 'pending';
+// ============================
+// 2. Slack API 관련 타입
+// ============================
+
+// @slack/web-api에서 직접 타입 추출
+export { WebClient } from '@slack/web-api';
+
+export type * from '@slack/web-api';
+
+// @slack/webhook에서 타입 추출
+export { IncomingWebhook } from '@slack/webhook';
+
+export type {
+  IncomingWebhookDefaultArguments,
+  IncomingWebhookSendArguments,
+  IncomingWebhookResult,
+} from '@slack/webhook';
+
+// @slack/types 타입 추출
+export type * from '@slack/types';
+
+// ============================
+// 3. 클라이언트 관련 타입
+// ============================
+
+export type FilesUploadV2Response = WebAPICallResult & {
+  files: FilesCompleteUploadExternalResponse[];
+};
+export interface SlackWebClientOptions extends WebClientOptions {
+  token: string;
 }
 
-export interface EmojiSymbols {
-  passed?: string;
-  failed?: string;
-  skipped?: string;
-  pending?: string;
-  start?: string;
-  finished?: string;
-  watch?: string;
-}
-
-export interface SlackWebApiOptions {
-  type: 'web-api';
-  channel: string;
-  slackBotToken: string;
-  uploadScreenshotOfFailedCase?: boolean;
-  notifyDetailResultThread?: boolean;
-  filterForDetailResults?: TestResultType[];
-  createScreenshotPayload?: (
-    testStats: TestStats,
-    screenshotBuffer: Buffer
-  ) => FilesUploadArguments;
-  createResultDetailPayload?: (
-    runnerStats: RunnerStats,
-    stateCounts: StateCount
-  ) => ChatPostMessageArguments;
-}
-
-export interface SlackWebhookOptions {
-  type: 'webhook';
+export interface SlackIncomingWebhookOptions
+  extends IncomingWebhookDefaultArguments {
   webhook: string;
-  slackName?: string;
-  slackIconUrl?: string;
 }
 
-export type SlackOptions = SlackWebApiOptions | SlackWebhookOptions;
+// ============================
+// 4. WDIOReporter 관련 타입
+// ============================
 
-export interface SlackReporterOptions extends Reporters.Options {
-  slackOptions?: SlackOptions;
-  emojiSymbols?: EmojiSymbols;
-  title?: string;
-  resultsUrl?: string;
-  notifyFailedCase?: boolean;
-  notifyTestStartMessage?: boolean;
-  notifyTestFinishMessage?: boolean;
-  useScenarioBasedStateCounts?: boolean;
-  createStartPayload?: (
-    runnerStats: RunnerStats
-  ) => ChatPostMessageArguments | IncomingWebhookSendArguments;
-  createFailedTestPayload?: (
-    testStats: TestStats
-  ) => ChatPostMessageArguments | IncomingWebhookSendArguments;
-  createResultPayload?: (
-    runnerStats: RunnerStats,
-    stateCounts: StateCount
-  ) => ChatPostMessageArguments | IncomingWebhookSendArguments;
+export type * from '@wdio/reporter';
+
+// ============================
+// 5. SlackReporter 관련 타입
+// ============================
+
+// SlackReporter 순환 참조 방지를 위한 컨텍스트 타입
+export interface SlackReporterContext {
+  options: SlackReporterOptions;
 }
 
-export interface FilesUploadV2Options {
+export type SlackBaseOptions = Partial<Reporters.Options> & {
+  notifyOnRunnerStart?: boolean;
+  notifyOnRunnerEnd?: boolean;
+  notifyOnTestFail?: boolean;
+};
+
+export type SlackWebAPIOptions = SlackBaseOptions &
+  SlackWebClientOptions & {
+    type: 'web-api';
+    channel: string;
+    createNotifyOnRunnerStartPayloads?: (
+      this: SlackReporterContext,
+      runnerStats: RunnerStats
+    ) => (ChatPostMessageArguments & { reply_in_thread?: boolean })[];
+    createNotifyOnRunnerEndPayloads?: (
+      this: SlackReporterContext,
+      runnerStats: RunnerStats
+    ) => (ChatPostMessageArguments & { reply_in_thread?: boolean })[];
+    createNotifyOnTestFailPayloads?: (
+      this: SlackReporterContext,
+      testStats: TestStats
+    ) => (ChatPostMessageArguments & { reply_in_thread?: boolean })[];
+  };
+
+export type SlackWebhookOptions = SlackBaseOptions &
+  IncomingWebhookDefaultArguments & {
+    type: 'webhook';
+    webhook: string;
+    createNotifyOnRunnerStartPayloads?: (
+      this: SlackReporterContext,
+      runnerStats: RunnerStats
+    ) => IncomingWebhookSendArguments[];
+    createNotifyOnRunnerEndPayloads?: (
+      this: SlackReporterContext,
+      runnerStats: RunnerStats
+    ) => IncomingWebhookSendArguments[];
+    createNotifyOnTestFailPayloads?: (
+      this: SlackReporterContext,
+      testStats: TestStats
+    ) => IncomingWebhookSendArguments[];
+  };
+
+export type SlackReporterOptions = SlackWebAPIOptions | SlackWebhookOptions;
+
+// ============================
+// 6. SlackQueue 관련 타입
+// ============================
+
+export interface SlackTaskBase {
+  id: string;
+  event: EventType;
+}
+
+export interface SlackWebAPIPostMessageTask extends SlackTaskBase {
+  type: typeof SLACK_REQUEST_TYPES.WEB_API_POST_MESSAGE;
+  payload: ChatPostMessageArguments & { reply_in_thread?: boolean };
+}
+
+export interface SlackWebAPIUploadTask extends SlackTaskBase {
+  type: typeof SLACK_REQUEST_TYPES.WEB_API_UPLOAD;
+  payload: FilesUploadV2Arguments;
   waitForUpload?: boolean;
-  retry?: number;
-  interval?: number;
 }
 
-export type SlackRequestType = PostMessage | Upload | Send;
-
-interface PostMessage {
-  type: typeof SLACK_REQUEST_TYPE.WEB_API_POST_MESSAGE;
-  payload: ChatPostMessageArguments;
-  isDetailResult?: boolean;
+export interface SlackWebhookSendTask extends SlackTaskBase {
+  type: typeof SLACK_REQUEST_TYPES.WEBHOOK_SEND;
+  payload: string | IncomingWebhookSendArguments;
 }
 
-interface Upload {
-  type: typeof SLACK_REQUEST_TYPE.WEB_API_UPLOAD;
-  payload: FilesUploadArguments;
-  options?: FilesUploadV2Options;
-}
+export type SlackTask =
+  | SlackWebAPIPostMessageTask
+  | SlackWebAPIUploadTask
+  | SlackWebhookSendTask;
 
-interface Send {
-  type: typeof SLACK_REQUEST_TYPE.WEBHOOK_SEND;
-  payload: IncomingWebhookSendArguments;
-}
+export type SlackResult =
+  | ChatPostMessageResponse
+  | FilesUploadV2Response
+  | IncomingWebhookResult;
 
-// global declarations moved from index.ts
+// ============================
+// 7. WebdriverIO 타입 확장
+// ============================
+
 declare global {
   namespace WebdriverIO {
     interface ReporterOption extends SlackReporterOptions {}
-  }
-
-  namespace NodeJS {
-    interface Process {
-      emit(
-        event: typeof EVENTS.POST_MESSAGE,
-        payload: ChatPostMessageArguments
-      ): boolean;
-      emit(
-        event: typeof EVENTS.UPLOAD,
-        args: {
-          payload: FilesUploadArguments;
-          options?: FilesUploadV2Options;
-        }
-      ): Promise<
-        WebAPICallResult & {
-          files: FilesCompleteUploadExternalResponse[];
-        }
-      >;
-      emit(
-        event: typeof EVENTS.SEND,
-        payload: IncomingWebhookSendArguments
-      ): boolean;
-      emit(
-        event: typeof EVENTS.SCREENSHOT,
-        args: {
-          buffer: Buffer;
-          options?: FilesUploadV2Options;
-        }
-      ): boolean;
-      emit(
-        event: typeof EVENTS.RESULT,
-        args: {
-          result:
-            | WebAPICallResult
-            | IncomingWebhookResult
-            | (WebAPICallResult & {
-                files: FilesCompleteUploadExternalResponse[];
-              })
-            | undefined;
-          error: any;
-        }
-      ): boolean;
-
-      on(
-        event: typeof EVENTS.POST_MESSAGE,
-        listener: (
-          payload: ChatPostMessageArguments
-        ) => Promise<WebAPICallResult>
-      ): this;
-      on(
-        event: typeof EVENTS.UPLOAD,
-        listener: (args: {
-          payload: FilesUploadArguments;
-          options?: FilesUploadV2Options;
-        }) => Promise<
-          WebAPICallResult & {
-            files: FilesCompleteUploadExternalResponse[];
-          }
-        >
-      ): this;
-      on(
-        event: typeof EVENTS.SEND,
-        listener: (
-          payload: IncomingWebhookSendArguments
-        ) => Promise<IncomingWebhookResult>
-      ): this;
-      on(
-        event: typeof EVENTS.SCREENSHOT,
-        listener: (args: {
-          buffer: Buffer;
-          options?: FilesUploadV2Options;
-        }) => void
-      ): this;
-      once(
-        event: typeof EVENTS.RESULT,
-        listener: (args: {
-          result:
-            | WebAPICallResult
-            | IncomingWebhookResult
-            | (WebAPICallResult & {
-                files: FilesCompleteUploadExternalResponse[];
-              })
-            | undefined;
-          error: any;
-        }) => Promise<void>
-      ): this;
-    }
   }
 }
