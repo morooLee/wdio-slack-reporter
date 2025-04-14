@@ -28,7 +28,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "8.2.0"
+    "@moroo/wdio-slack-reporter": "8.3.0"
   }
 }
 ```
@@ -72,7 +72,7 @@ export.config = {
         slackOptions: {
           type: 'web-api',
           channel: process.env.SLACK_CHANNEL || 'Cxxxxxxxxxx',
-          slackBotToken: process.env.SLACK_BOT_TOKEN || 'xoxb-xxxxxxxxxx-xxxxxx...',
+          token: process.env.SLACK_BOT_TOKEN || 'xoxb-xxxxxxxxxx-xxxxxx...',
         },
       }
     ],
@@ -95,7 +95,7 @@ If both `web-api` and `webhook` are set, `web-api` is used.
 - Scope: `webhook`
 - Type: `string`
 
-#### **slackName (`Optional`)**
+#### **username (`Optional`)**
 
 The value of username will appear in the slack notification as the user who sent it.
 
@@ -103,7 +103,7 @@ The value of username will appear in the slack notification as the user who sent
 - Type: `string`
 - Default: `"WebdriverIO Reporter"`
 
-#### **slackIconUrl (`Optional`)**
+#### **icon_url (`Optional`)**
 
 The url of the Icon to be displayed in the slack
 
@@ -111,9 +111,12 @@ The url of the Icon to be displayed in the slack
 - Type: `string`
 - Default: `"https://webdriver.io/img/webdriverio.png"`
 
+> [!TIP]
+> Besides these, all options defined in the [Slack Incoming Webhook](https://www.npmjs.com/package/@slack/webhook) specification can also be used.
+
 ### Web API (Slack Bot)
 
-#### **slackBotToken (`Required`)**
+#### **token (`Required`)**
 
 [**Web API**](https://api.slack.com/web) of the slack channel to which notifications should be sent. [A bot user token](https://api.slack.com/legacy/oauth#bots) is required. Bot access tokens always begin with `xoxb`.
 The bot token requires the OAuth scope of [`chat:write`](https://api.slack.com/scopes/chat:write), [`files:write`](https://api.slack.com/scopes/files:write).
@@ -129,6 +132,9 @@ Channel, private group, or IM channel to send message to. Can be an encoded ID, 
 
 - Scope: `web-api`
 - Type: `string`
+
+> [!TIP]
+> Besides these, all options defined in the [Slack Web API](https://www.npmjs.com/package/@slack/web-api) specification can also be used.
 
 #### **uploadScreenshotOfFailedCase (`Optional`)**
 
@@ -277,8 +283,8 @@ export.config = {
         slackOptions: {
           type: 'webhook',
           webhook: process.env.SLACK_WEBHOOK_URL || "https://hooks.slack.com/........",
-          slackName: "WebdriverIO Reporter",
-          slackIconUrl: "https://webdriver.io/img/webdriverio.png",
+          username: "WebdriverIO Reporter",
+          "icon-url": "https://webdriver.io/img/webdriverio.png",
         },
         // Set the Title of Test.
         title: 'Slack Reporter Test',
@@ -343,7 +349,7 @@ export.config = {
         // Set the Slack Options used web-api.
         slackOptions: {
           type: 'web-api',
-          slackBotToken: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",,
+          token: process.env.SLACK_BOT_TOKEN || "xoxb-xxxxxxxxxx-xxxxxx...",,
           channel: process.env.SLACK_CHANNEL || "Cxxxxxxxxxx",
           // Set this option to true to attach a screenshot to the failed case.
           uploadScreenshotOfFailedCase: true,
@@ -357,7 +363,7 @@ export.config = {
             'skipped'
           ],
           // Override the createScreenshotPayload function.
-          createScreenshotPayload: function (testStats: TestStats, screenshotBuffer: Buffer): FilesUploadArguments {
+          createScreenshotPayload: function (testStats: TestStats, screenshotBuffer: string | Buffer<ArrayBufferLike>): FilesUploadArguments {
             const payload: FilesUploadArguments = {
               // do something...
             }
@@ -466,7 +472,7 @@ describe('Set the resultsUrl value', function () {
 
 ### uploadFailedTestScreenshot
 
-> **type**: `(data: string | Buffer) => void`
+> **type**: `(data: string | Buffer<ArrayBufferLike>) => void`
 
 Add a screenshot as a thread to the failed test notification.<br />
 _**(If you are using a webhook this will print a warning and do nothing.)**_

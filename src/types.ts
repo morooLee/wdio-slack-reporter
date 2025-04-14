@@ -1,5 +1,5 @@
 /**
- * Copyright (c) moroo.
+ * Copyright (c) moroo
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -13,13 +13,41 @@ import type {
   FilesCompleteUploadExternalResponse,
   FilesUploadArguments,
   WebAPICallResult,
+  WebClientOptions,
 } from '@slack/web-api';
 import type {
+  IncomingWebhookDefaultArguments,
   IncomingWebhookResult,
   IncomingWebhookSendArguments,
 } from '@slack/webhook';
 import type { RunnerStats, TestStats } from '@wdio/reporter';
 import type { Reporters } from '@wdio/types';
+
+export class TimeoutError extends Error {
+  public code: string;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'TimeoutError';
+    this.code = 'ETIMEDOUT';
+  }
+}
+
+// ============================
+// 3. 클라이언트 관련 타입
+// ============================
+
+export type FilesUploadV2Response = WebAPICallResult & {
+  files: FilesCompleteUploadExternalResponse[];
+};
+export interface SlackWebClientOptions extends WebClientOptions {
+  token: string;
+}
+
+export interface SlackIncomingWebhookOptions
+  extends IncomingWebhookDefaultArguments {
+  webhook: string;
+}
 
 export type TestResultType = 'passed' | 'failed' | 'pending' | 'skipped';
 
@@ -43,16 +71,19 @@ export interface EmojiSymbols {
   watch?: string;
 }
 
-export interface SlackWebApiOptions {
+export interface SlackWebApiOptions extends SlackWebClientOptions {
   type: 'web-api';
   channel: string;
-  slackBotToken: string;
+  /**
+   * @deprecated This property is deprecated. Please use the inherited 'token' property instead. Will be removed in the next major version.
+   */
+  slackBotToken?: string;
   uploadScreenshotOfFailedCase?: boolean;
   notifyDetailResultThread?: boolean;
   filterForDetailResults?: TestResultType[];
   createScreenshotPayload?: (
     testStats: TestStats,
-    screenshotBuffer: Buffer
+    screenshotBuffer: string | Buffer
   ) => FilesUploadArguments;
   createResultDetailPayload?: (
     runnerStats: RunnerStats,
@@ -60,10 +91,15 @@ export interface SlackWebApiOptions {
   ) => ChatPostMessageArguments;
 }
 
-export interface SlackWebhookOptions {
+export interface SlackWebhookOptions extends SlackIncomingWebhookOptions {
   type: 'webhook';
-  webhook: string;
+  /**
+   * @deprecated This property is deprecated. Please use the inherited 'username' property instead. Will be removed in the next major version.
+   */
   slackName?: string;
+  /**
+   * @deprecated This property is deprecated. Please use the inherited 'icon_url' property instead. Will be removed in the next major version.
+   */
   slackIconUrl?: string;
 }
 
@@ -92,7 +128,7 @@ export interface SlackReporterOptions extends Reporters.Options {
 
 export interface FilesUploadV2Options {
   waitForUpload?: boolean;
-  retry?: number;
+  timeout?: number;
   interval?: number;
 }
 
@@ -145,8 +181,7 @@ declare global {
       emit(
         event: typeof EVENTS.SCREENSHOT,
         args: {
-          buffer: Buffer;
-          options?: FilesUploadV2Options;
+          buffer: string | Buffer;
         }
       ): boolean;
       emit(
@@ -188,10 +223,7 @@ declare global {
       ): this;
       on(
         event: typeof EVENTS.SCREENSHOT,
-        listener: (args: {
-          buffer: Buffer;
-          options?: FilesUploadV2Options;
-        }) => void
+        listener: (args: { buffer: string | Buffer }) => void
       ): this;
       once(
         event: typeof EVENTS.RESULT,
