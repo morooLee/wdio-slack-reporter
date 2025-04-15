@@ -1,6 +1,6 @@
 {
   "name": "@moroo/wdio-slack-reporter",
-  "version": "8.3.0",
+  "version": "9.0.0",
   "description": "Reporter from WebdriverIO using Incoming webhook and Web API to send results to Slack.",
   "repository": {
     "type": "git",
@@ -45,15 +45,16 @@
     "wdio-slack-reporter"
   ],
   "engines": {
-    "node": "^18 || >=22.14"
+    "node": ">= 18",
+    "npm": ">= 8.6.0"
   },
   "dependencies": {
     "@slack/types": "^2.14.0",
     "@slack/web-api": "^7.8.0",
     "@slack/webhook": "^7.0.4",
-    "@wdio/logger": "^8.38.0",
-    "@wdio/reporter": "^8.43.0",
-    "@wdio/types": "^8.41.0"
+    "@wdio/logger": "^9.4.4",
+    "@wdio/reporter": "^9.12.3",
+    "@wdio/types": "^9.12.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
