@@ -18,14 +18,14 @@ importers:
         specifier: ^7.0.4
         version: 7.0.4
       '@wdio/logger':
-        specifier: ^8.38.0
-        version: 8.38.0
+        specifier: ^9.4.4
+        version: 9.4.4
       '@wdio/reporter':
-        specifier: ^8.43.0
-        version: 8.43.0
+        specifier: ^9.12.3
+        version: 9.12.3
       '@wdio/types':
-        specifier: ^8.41.0
-        version: 8.41.0
+        specifier: ^9.12.3
+        version: 9.12.3
     devDependencies:
       '@eslint/js':
         specifier: ^9.22.0
@@ -441,6 +441,9 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
+  '@types/node@20.17.30':
+    resolution: {integrity: sha512-7zf4YyHA+jvBNfVrk2Gtvs6x7E8V+YDW05bNfG2XkWDJfYRXrTiP/DsB2zSYTaHX0bGIujTBQdMVAhb+j7mwpg==}
+
   '@types/node@22.13.10':
     resolution: {integrity: sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==}
 
@@ -494,17 +497,17 @@ packages:
     resolution: {integrity: sha512-AjOC3zfnxd6S4Eiy3jwktJPclqhFHNyd8L6Gycf9WUPoKZpgM5PjkxY1X7uSy61xVpiJDhhk7XT2NVsN3ALTWg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@wdio/logger@8.38.0':
-    resolution: {integrity: sha512-kcHL86RmNbcQP+Gq/vQUGlArfU6IIcbbnNp32rRIraitomZow+iEoc519rdQmSVusDozMS5DZthkgDdxK+vz6Q==}
-    engines: {node: ^16.13 || >=18}
+  '@wdio/logger@9.4.4':
+    resolution: {integrity: sha512-BXx8RXFUW2M4dcO6t5Le95Hi2ZkTQBRsvBQqLekT2rZ6Xmw8ZKZBPf0FptnoftFGg6dYmwnDidYv/0+4PiHjpQ==}
+    engines: {node: '>=18.20.0'}
 
-  '@wdio/reporter@8.43.0':
-    resolution: {integrity: sha512-0ph8SabdMrgDmuLUEwA7yvkrvlCw4/EXttb3CGucjSkuiSbZNLhdTMXpyPoewh2soa253fIpnx79HztOsOzn5Q==}
-    engines: {node: ^16.13 || >=18}
+  '@wdio/reporter@9.12.3':
+    resolution: {integrity: sha512-T0dO6xQ3AYTwvgmHpVP/w/8pgDtv3SFo8JKO0EDBFM6uNOyKlh+9ChvU2KednY1Qt7Pw11sUrSFsFzY7TXW1iQ==}
+    engines: {node: '>=18.20.0'}
 
-  '@wdio/types@8.41.0':
-    resolution: {integrity: sha512-t4NaNTvJZci3Xv/yUZPH4eTL0hxrVTf5wdwNnYIBrzMnlRDbNefjQ0P7FM7ZjQCLaH92AEH6t/XanUId7Webug==}
-    engines: {node: ^16.13 || >=18}
+  '@wdio/types@9.12.3':
+    resolution: {integrity: sha512-MlnQ3WG1CQAjmUmeKtv3timGR91hSsCwQW9T1kqpu0VaJ/qbw3sWgtArMqRvgWB2H6IGueqQwDQ9qHlP013w9Q==}
+    engines: {node: '>=18.20.0'}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -1673,6 +1676,9 @@ packages:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
     engines: {node: '>= 0.4'}
 
+  undici-types@6.19.8:
+    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
@@ -2005,6 +2011,10 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
+  '@types/node@20.17.30':
+    dependencies:
+      undici-types: 6.19.8
+
   '@types/node@22.13.10':
     dependencies:
       undici-types: 6.20.0
@@ -2088,24 +2098,24 @@ snapshots:
       '@typescript-eslint/types': 8.26.1
       eslint-visitor-keys: 4.2.0
 
-  '@wdio/logger@8.38.0':
+  '@wdio/logger@9.4.4':
     dependencies:
       chalk: 5.4.1
       loglevel: 1.9.2
       loglevel-plugin-prefix: 0.8.4
       strip-ansi: 7.1.0
 
-  '@wdio/reporter@8.43.0':
+  '@wdio/reporter@9.12.3':
     dependencies:
-      '@types/node': 22.13.10
-      '@wdio/logger': 8.38.0
-      '@wdio/types': 8.41.0
+      '@types/node': 20.17.30
+      '@wdio/logger': 9.4.4
+      '@wdio/types': 9.12.3
       diff: 7.0.0
       object-inspect: 1.13.4
 
-  '@wdio/types@8.41.0':
+  '@wdio/types@9.12.3':
     dependencies:
-      '@types/node': 22.13.10
+      '@types/node': 20.17.30
 
   acorn-jsx@5.3.2(acorn@8.14.1):
     dependencies:
@@ -3443,6 +3453,8 @@ snapshots:
       has-bigints: 1.1.0
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
+
+  undici-types@6.19.8: {}
 
   undici-types@6.20.0: {}
 

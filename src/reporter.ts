@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+import path from 'node:path';
 import util from 'node:util';
 
 import WDIOReporter from '@wdio/reporter';
@@ -580,23 +581,23 @@ class SlackReporter extends WDIOReporter {
     );
   }
   /**
-   * Get environment combo
-   * @param  {Capabilities.RemoteCapability} capability Capabilities
+   * Get information about the environment
+   * @description
+   * Referenced from [Spec Reporter](https://github.com/webdriverio/webdriverio/blob/c6cf43f67aa46a294a4df158ddd194d79f11ac90/packages/wdio-spec-reporter/src/index.ts#L653)
+   * @param  {Capabilities.ResolvedTestrunnerCapabilities} capability Capabilities
    * @param  {boolean} isMultiremote Is multiremote
-   * @return {string} Environment combo
+   * @return {string}               Environment string
    */
   private getEnvironmentCombo(
-    capability: Capabilities.RemoteCapability,
+    capability: Capabilities.ResolvedTestrunnerCapabilities,
     isMultiremote = false
   ): string {
     let output = '';
-    const capabilities: Capabilities.RemoteCapability =
-      ((capability as Capabilities.W3CCapabilities)
-        .alwaysMatch as Capabilities.DesiredCapabilities) ||
-      (capability as Capabilities.DesiredCapabilities);
+    const capabilities =
+      'alwaysMatch' in capability ? capability.alwaysMatch : capability;
     const drivers: {
       driverName?: string;
-      capability: Capabilities.RemoteCapability;
+      capability: WebdriverIO.Capabilities;
     }[] = [];
 
     if (isMultiremote) {
@@ -605,9 +606,9 @@ class SlackReporter extends WDIOReporter {
       Object.keys(capabilities).forEach((key) => {
         drivers.push({
           driverName: key,
-          capability: (capabilities as Capabilities.MultiRemoteCapabilities)[
-            key
-          ],
+          capability: (
+            capabilities as Record<string, WebdriverIO.Capabilities>
+          )[key],
         });
       });
     } else {
@@ -620,25 +621,42 @@ class SlackReporter extends WDIOReporter {
       const isLastIndex = array.length - 1 === index;
       let env = '';
       const caps =
-        ((capability as Capabilities.W3CCapabilities)
-          .alwaysMatch as Capabilities.DesiredCapabilities) ||
-        (capability as Capabilities.DesiredCapabilities);
-      const device = caps.deviceName;
-      const browser = caps.browserName || caps.browser;
-      const version =
-        caps.browserVersion ||
-        caps.version ||
-        caps.platformVersion ||
-        caps.browser_version;
-      const platform =
-        caps.platformName ||
-        caps.platform ||
-        (caps.os
-          ? caps.os + (caps.os_version ? ` ${caps.os_version}` : '')
-          : '(unknown)');
+        'alwaysMatch' in capability
+          ? (capability.alwaysMatch as WebdriverIO.Capabilities)
+          : capability;
+      const device = caps['appium:deviceName'];
+      // prettier-ignore
+      // @ts-expect-error outdated JSONWP capabilities
+      const app = (capability['appium:app'] || capability.app || '').replace('sauce-storage:', '');
+      const appName =
+        caps['appium:bundleId'] ||
+        caps['appium:appPackage'] ||
+        caps['appium:appActivity'] ||
+        (path.isAbsolute(app) ? path.basename(app) : app);
+
+      // @ts-expect-error outdated JSONWP capabilities
+      const browser = capability.browserName || capability.browser || appName;
+      /**
+       * fallback to different capability types:
+       * browserVersion: W3C format
+       * version: JSONWP format
+       * platformVersion: mobile format
+       * browser_version: invalid BS capability
+       */
+      // prettier-ignore
+      // @ts-expect-error outdated JSONWP capabilities
+      const version = caps.browserVersion || caps.version || caps['appium:platformVersion'] || caps.browser_version;
+      /**
+       * fallback to different capability types:
+       * platformName: W3C format
+       * platform: JSONWP format
+       * os, os_version: invalid BS capability
+       */
+      // prettier-ignore
+      // @ts-expect-error outdated JSONWP capabilities
+      const platform = caps.platformName || caps.platform || (caps.os ? caps.os + (caps.os_version ? ` ${caps.os_version}` : '') : '(unknown)');
       if (device) {
-        const program =
-          (caps.app || '').replace('sauce-storage:', '') || caps.browserName;
+        const program = appName || caps.browserName;
         const executing = program ? `executing ${program}` : '';
 
         env = `${device} on ${platform} ${version} ${executing}`.trim();

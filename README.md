@@ -3,10 +3,9 @@
 ![version](https://img.shields.io/npm/v/@moroo/wdio-slack-reporter?color=%23CB3837&label=latest)
 ![downloads](https://img.shields.io/npm/dw/@moroo/wdio-slack-reporter?color=%23CB3837&)
 ![license](https://img.shields.io/npm/l/@moroo/wdio-slack-reporter)
-![webdriverio](https://img.shields.io/static/v1?color=EA5906&label=WebdriverIO&message=>=6.0&logo=webdriverio)
+![webdriverio](https://img.shields.io/static/v1?color=EA5906&label=WebdriverIO&message=>=8.0&logo=webdriverio)
 
-Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).<br />
-This package is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x and above.
+Reporter from [WebdriverIO](https://webdriver.io/) using [Incoming webhook](https://api.slack.com/incoming-webhooks) and [Web API](https://api.slack.com/web) to send results to [Slack](https://slack.com/).
 
 ## 📢 Important Notice
 
@@ -16,10 +15,10 @@ This package is Compatible with [WebdriverIO](https://webdriver.io/) version 6.x
 
 <img src="https://raw.githubusercontent.com/morooLee/wdio-slack-reporter/master/docs/Notification.png" width="80%" height="80%" title="Notification Image" alt="Notification"></img>
 
-## WebdriverIO 4.x or lower Compatibility
+## WebdriverIO Version Support Policy
 
-> This project is Compatible with WebdriverIO version 6.x and above.<br />
-> If you are using 4.x or lower, use to [wdio-slack-reporter](https://github.com/kmnaid/wdio-slack-reporter).
+> The WebdriverIO versions supported in this project follow WebdriverIO's support policy.
+> WebdriverIO's support policy can be checked [here](https://webdriver.io/versions).
 
 ## Installation
 
@@ -28,7 +27,7 @@ The easiest way is to keep `@moroo/wdio-slack-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "@moroo/wdio-slack-reporter": "8.3.0"
+    "@moroo/wdio-slack-reporter": "^9.0.0"
   }
 }
 ```
@@ -51,20 +50,13 @@ Instructions on how to install `WebdriverIO` can be found [here](https://webdriv
 
 ## Configuration
 
-At the top of the wdio.conf.js-file, add:
-
-### ES6
-
-```js
-// wdio.conf.js
-import SlackReporter from '@moroo/wdio-slack-reporter';
-```
-
 In order to use the reporter you need to add slack to your reporters array in wdio.conf.js
 
 ```js
 // wdio.conf.js
-export.config = {
+import SlackReporter from '@moroo/wdio-slack-reporter';
+
+export const config: WebdriverIO.Config = {
   reporters: [
     [
       SlackReporter,
@@ -74,7 +66,7 @@ export.config = {
           channel: process.env.SLACK_CHANNEL || 'Cxxxxxxxxxx',
           token: process.env.SLACK_BOT_TOKEN || 'xoxb-xxxxxxxxxx-xxxxxx...',
         },
-      }
+      },
     ],
   ],
 };
@@ -266,7 +258,7 @@ This option customizes the payload that is notified of the results of the test.
 
 ## Use the Incoming Webhook
 
-If you are using webhook, can not thread and upload.<br />
+If you are using webhook, can not thread and upload.  
 Therefore, functions related to `upload` and `thread` are not available.
 
 ### Configuration Example
@@ -333,8 +325,8 @@ export.config = {
 
 ## Use the Web API
 
-To use the api, you need a scopes like the one below.<br />
-[`chat:write`](https://api.slack.com/scopes/chat:write), [`files:write`](https://api.slack.com/scopes/files:write). [See below](https://api.slack.com/legacy/oauth-scopes) for more details.<br />
+To use the api, you need a scopes like the one below.  
+[`chat:write`](https://api.slack.com/scopes/chat:write), [`files:write`](https://api.slack.com/scopes/files:write). [See below](https://api.slack.com/legacy/oauth-scopes) for more details.  
 
 ### Configuration Example
 
@@ -451,7 +443,7 @@ describe('Get the resultsUrl value', function () {
 
 > **type**: `(url: string) => void`
 
-Set the results url.<br />
+Set the results url.  
 _(This is useful if the url with test results changes every time.)_
 
 ```js
@@ -474,7 +466,7 @@ describe('Set the resultsUrl value', function () {
 
 > **type**: `(data: string | Buffer<ArrayBufferLike>) => void`
 
-Add a screenshot as a thread to the failed test notification.<br />
+Add a screenshot as a thread to the failed test notification.  
 _**(If you are using a webhook this will print a warning and do nothing.)**_
 
 ```bash
@@ -498,7 +490,7 @@ export.config = {
 
 > **type**: `(payload: ChatPostMessageArguments) => Promise<WebAPICallResult>`
 
-Post a message to Slack.<br />
+Post a message to Slack.  
 _**(If you are using a webhook this will throw an error.)**_
 
 ```bash
@@ -527,7 +519,7 @@ describe('Post Function Test', function () {
 
 > **type**: `({ payload: FilesUploadArguments; options: FilesUploadV2Options }) => Promise<WebAPICallResult & {files: FilesCompleteUploadExternalResponse[];}>`
 
-Upload a file to Slack.<br />
+Upload a file to Slack.  
 _**(If you are using a webhook this will throw an error.)**_
 
 ```bash
@@ -564,7 +556,7 @@ describe('Upload Function Test', function () {
 
 > **type**: `(payload: IncomingWebhookSendArguments) => Promise<IncomingWebhookResult>`
 
-Send a message to Slack.<br />
+Send a message to Slack.  
 _**(If you are using a web-api this will throw an error.)**_
 
 ```bash
@@ -628,7 +620,7 @@ export.config = {
 
 ### Jasmine Option - expectationResultHandler
 
-Adding the uploadFailedTestScreenshot function here doesn't work either.<br />
+Adding the uploadFailedTestScreenshot function here doesn't work either.  
 This is because the function works after every test, so the current test is unknown.
 
 ```js

@@ -28,6 +28,7 @@ const ignores = [
   '**/*.js.map',
   '.eslintrc.js',
   'test-results/',
+  '**/*.md',
 ];
 
 // 기본 규칙
@@ -67,6 +68,18 @@ const baseRules = {
   // '@stylistic/arrow-parens': [2, 'as-needed'],
   // '@stylistic/comma-dangle': [2, 'always-multiline'],
   '@stylistic/keyword-spacing': [2, { before: true, after: true }],
+  '@stylistic/max-len': [
+    'error',
+    {
+      code: 80, // 한 줄에 허용되는 최대 문자 수
+      tabWidth: 2, // 탭 문자 너비
+      ignoreComments: true, // 주석은 길이 제한에서 제외
+      ignoreUrls: true, // URL은 길이 제한에서 제외
+      ignoreStrings: true, // 문자열은 길이 제한에서 제외
+      ignoreTemplateLiterals: true, // 템플릿 리터럴은 길이 제한에서 제외
+      ignoreRegExpLiterals: true, // 정규식은 길이 제한에서 제외
+    },
+  ],
 
   // 안티 패턴
   'no-var': 2,
